@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "InputActionValue.h"
 #include "PlayerCharacter.generated.h"
 
 UCLASS()
@@ -19,14 +20,40 @@ protected:
 
 	// Basic component needed for the player vision
 	UPROPERTY(EditAnywhere)
-	class UCameraComponent* Camera;
+	class UCameraComponent* ThirdPersonCamera;
 
-	void MoveForward(float InputNumber);
-	void MoveRight(float InputNumber);
+	UPROPERTY(EditAnywhere)
+	class UCameraComponent* FirstPersonCamera;
 
-	void Turn(float InputNumber);
-	void LookUp(float InputNumber);
+	bool bIsFirstPerson;
+	bool bCanSwitchCamera;
 
+	FTimerHandle SwitchCameraTimerHandle;
+
+	UPROPERTY(EditAnywhere)
+	class USpringArmComponent* SpringArm;
+
+
+	UPROPERTY(EditAnywhere, Category = "EnhancedInput")
+	class UInputMappingContext* InputMapping;
+
+	UPROPERTY(EditAnywhere, Category = "EnhancedInput")
+	class UInputAction* MoveAction;
+
+	UPROPERTY(EditAnywhere, Category = "EnhancedInput")
+	class UInputAction* JumpActiom;
+
+	UPROPERTY(EditAnywhere, Category = "EnhancedInput")
+	class UInputAction* LookAction;
+
+	UPROPERTY(EditAnywhere, Category = "EnhancedInput")
+	class UInputAction* SwitchCameraAction;
+
+	void Move(const FInputActionValue& ActionValue);
+	void Look(const FInputActionValue& ActionValue);
+	void Jump();
+	void SwitchCamera();
+	void ResetCameraSwitch();
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
