@@ -29,6 +29,9 @@ APlayerCharacter::APlayerCharacter()
 	FirstPersonCamera->SetActive(false);
 	ThirdPersonCamera->SetActive(true);
 	bCanSwitchCamera = true;
+
+	MaxWalkSpeed = 500;
+	MaxSprintSpeed = 800;
 }
 
 // Called when the game starts or when spawned
@@ -43,6 +46,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	UpdateStamina();
 }
 
 // Called to bind functionality to input
@@ -61,6 +65,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		Input->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Look);
 		Input->BindAction(JumpActiom, ETriggerEvent::Triggered, this, &APlayerCharacter::Jump);
 		Input->BindAction(SwitchCameraAction, ETriggerEvent::Triggered, this, &APlayerCharacter::SwitchCamera);
+		Input->BindAction(SprintAction, ETriggerEvent::Triggered, this, &APlayerCharacter::StartSprint);
+		Input->BindAction(SprintAction, ETriggerEvent::Completed, this, &APlayerCharacter::EndSprint);
 	}
 
 
@@ -122,4 +128,48 @@ void APlayerCharacter::SwitchCamera()
 void APlayerCharacter::ResetCameraSwitch()
 {
 	bCanSwitchCamera = true;
+}
+
+void APlayerCharacter::StartSprint()
+{
+	if (bHasStamina) {
+		GetCharacterMovement()->MaxWalkSpeed = MaxSprintSpeed;
+
+		// In the case of the sprint button being held while the player is not moving
+		if (GetVelocity().Size() >= 0.5) {
+			bIsSprinting = true;
+		}
+		else {
+			bIsSprinting = false;
+		}
+	}
+	
+}
+
+void APlayerCharacter::EndSprint()
+{
+	GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
+	bIsSprinting = false;
+}
+
+void APlayerCharacter::UpdateStamina()
+{
+	if (bIsSprinting) {
+		CurrStamina -= StaminaDrainTime;
+		CurrentRefillDelayTime = StaminaDelayBeforeRefill;
+	}
+	else if (!bIsSprinting && CurrStamina < MaxStamina) {
+		CurrentRefillDelayTime--;
+		if (CurrentRefillDelayTime <= 0) {
+			CurrStamina += StaminaRefillTime;
+		}
+	}
+
+	if (CurrStamina <= 0) {
+		bHasStamina = false;
+		EndSprint();
+	}
+	else {
+		bHasStamina = true;
+	}
 }

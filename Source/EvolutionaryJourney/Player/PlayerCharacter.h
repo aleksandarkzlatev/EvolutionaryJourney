@@ -18,6 +18,36 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	bool bIsFirstPerson;
+	bool bCanSwitchCamera;
+	bool bIsSprinting;
+	bool bHasStamina;
+
+	UPROPERTY(EditAnywhere, Category = "Movement")
+	float MaxWalkSpeed;
+
+	UPROPERTY(EditAnywhere, Category = "Movement")
+	float MaxSprintSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly , Category = "Movement")
+	float MaxStamina;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
+	float CurrStamina;
+
+	UPROPERTY(EditAnywhere, Category = "Movement")
+	float StaminaDrainTime;
+
+	UPROPERTY(EditAnywhere, Category = "Movement")
+	float StaminaRefillTime;
+
+	UPROPERTY(EditAnywhere, Category = "Movement")
+	float StaminaDelayBeforeRefill;
+
+	float CurrentRefillDelayTime;
+
+	FTimerHandle SwitchCameraTimerHandle;
+
 	// Basic component needed for the player vision
 	UPROPERTY(EditAnywhere)
 	class UCameraComponent* ThirdPersonCamera;
@@ -25,10 +55,6 @@ protected:
 	UPROPERTY(EditAnywhere)
 	class UCameraComponent* FirstPersonCamera;
 
-	bool bIsFirstPerson;
-	bool bCanSwitchCamera;
-
-	FTimerHandle SwitchCameraTimerHandle;
 
 	UPROPERTY(EditAnywhere)
 	class USpringArmComponent* SpringArm;
@@ -48,12 +74,23 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "EnhancedInput")
 	class UInputAction* SwitchCameraAction;
+	
+	UPROPERTY(EditAnywhere, Category = "EnhancedInput")
+	class UInputAction* SprintAction;
+
 
 	void Move(const FInputActionValue& ActionValue);
 	void Look(const FInputActionValue& ActionValue);
 	void Jump();
+
 	void SwitchCamera();
 	void ResetCameraSwitch();
+
+	void StartSprint();
+	void EndSprint();
+	void UpdateStamina();
+
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
