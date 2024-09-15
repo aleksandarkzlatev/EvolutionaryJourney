@@ -23,6 +23,9 @@ protected:
 	bool bIsSprinting;
 	bool bHasStamina;
 
+	UPROPERTY(EditAnywhere, Category = "Damage");
+	float Damage;
+
 	UPROPERTY(EditAnywhere, Category = "Movement")
 	float MaxWalkSpeed;
 
@@ -46,7 +49,6 @@ protected:
 
 	float CurrentRefillDelayTime;
 
-	FTimerHandle SwitchCameraTimerHandle;
 
 	// Basic component needed for the player vision
 	UPROPERTY(EditAnywhere)
@@ -78,6 +80,11 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "EnhancedInput")
 	class UInputAction* SprintAction;
 
+	UPROPERTY(EditAnywhere, Category = "EnhancedInput")
+	class UInputAction* IncreaseHealthAction;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	class UHealthComponent* HealthComponent;
 
 	void Move(const FInputActionValue& ActionValue);
 	void Look(const FInputActionValue& ActionValue);
@@ -89,7 +96,6 @@ protected:
 	void StartSprint();
 	void EndSprint();
 	void UpdateStamina();
-
 
 public:	
 	// Called every frame

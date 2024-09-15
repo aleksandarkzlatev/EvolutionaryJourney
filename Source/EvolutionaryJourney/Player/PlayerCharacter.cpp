@@ -5,6 +5,7 @@
 #include "EnhancedInputComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "EvolutionaryJourney/Components//HealthComponent.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -122,6 +123,8 @@ void APlayerCharacter::SwitchCamera()
 	bIsFirstPerson = !bIsFirstPerson;
 
 	bCanSwitchCamera = false;
+
+	FTimerHandle SwitchCameraTimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(SwitchCameraTimerHandle, this, &APlayerCharacter::ResetCameraSwitch, 0.5f, false);
 }
 
