@@ -78,11 +78,14 @@ void APlayerCharacter::Move(const FInputActionValue& InputNumber)
 	FVector2D InputVector = InputNumber.Get<FVector2D>();
 
 	if (IsValid(Controller)) {
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YamRotation(0, Rotation.Yaw, 0);
 
-		const FVector ForwardDirection = FRotationMatrix(YamRotation).GetUnitAxis(EAxis::X);
-		const FVector RightDirection = FRotationMatrix(YamRotation).GetUnitAxis(EAxis::Y);
+		const FRotator Rotation = Controller->GetControlRotation();
+		const FRotator YawRotation(0, Rotation.Yaw, 0);
+		const FRotationMatrix RotationMatrix(YawRotation);
+
+
+		const FVector ForwardDirection = RotationMatrix.GetUnitAxis(EAxis::X);
+		const FVector RightDirection = RotationMatrix.GetUnitAxis(EAxis::Y);
 		
 
 		AddMovementInput(ForwardDirection, InputVector.Y);
