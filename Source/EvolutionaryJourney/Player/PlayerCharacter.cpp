@@ -5,7 +5,10 @@
 #include "EnhancedInputComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "EvolutionaryJourney/Components//HealthComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "EvolutionaryJourney/Components/Health/HealthComponent.h"
+#include "EvolutionaryJourney//Components/Weapons/CloseRange/CloseRangeWeaponComponent.h"
+#include "EvolutionaryJourney/Animations/PlayerCharacter/PlayerCharacterAnimations.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -31,8 +34,15 @@ APlayerCharacter::APlayerCharacter()
 	ThirdPersonCamera->SetActive(true);
 	bCanSwitchCamera = true;
 
+	CloseRangeWeapon = CreateDefaultSubobject<UCloseRangeWeaponComponent>(TEXT("Close Range Weapon"));
+	CloseRangeWeapon->Weapon->SetupAttachment(GetMesh(), FName("WeaponSocket"));
+	CloseRangeWeapon->WeaponOwner = this;
+
+	GetMesh()->SetAnimInstanceClass(UPlayerCharacterAnimations::StaticClass());
+
 	MaxWalkSpeed = 500;
 	MaxSprintSpeed = 800;
+
 }
 
 // Called when the game starts or when spawned
@@ -46,7 +56,6 @@ void APlayerCharacter::BeginPlay()
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 	UpdateStamina();
 }
 
@@ -68,6 +77,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		Input->BindAction(SwitchCameraAction, ETriggerEvent::Triggered, this, &APlayerCharacter::SwitchCamera);
 		Input->BindAction(SprintAction, ETriggerEvent::Triggered, this, &APlayerCharacter::StartSprint);
 		Input->BindAction(SprintAction, ETriggerEvent::Completed, this, &APlayerCharacter::EndSprint);
+		Input->BindAction(AttackAction, ETriggerEvent::Triggered, this, &APlayerCharacter::StartAttack);
 	}
 
 
@@ -178,4 +188,9 @@ void APlayerCharacter::UpdateStamina()
 	else {
 		bHasStamina = true;
 	}
+}
+
+void APlayerCharacter::StartAttack()
+{
+	CloseRangeWeapon->StartAttack();
 }

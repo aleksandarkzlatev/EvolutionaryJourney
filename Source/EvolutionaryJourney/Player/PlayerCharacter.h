@@ -23,8 +23,6 @@ protected:
 	bool bIsSprinting;
 	bool bHasStamina;
 
-	UPROPERTY(EditAnywhere, Category = "Damage");
-	float Damage;
 
 	UPROPERTY(EditAnywhere, Category = "Movement")
 	float MaxWalkSpeed;
@@ -79,12 +77,16 @@ protected:
 	
 	UPROPERTY(EditAnywhere, Category = "EnhancedInput")
 	class UInputAction* SprintAction;
-
+	
 	UPROPERTY(EditAnywhere, Category = "EnhancedInput")
-	class UInputAction* IncreaseHealthAction;
+	class UInputAction* AttackAction;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	class UHealthComponent* HealthComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	class UCloseRangeWeaponComponent* CloseRangeWeapon;
+
 
 	void Move(const FInputActionValue& ActionValue);
 	void Look(const FInputActionValue& ActionValue);
@@ -96,6 +98,8 @@ protected:
 	void StartSprint();
 	void EndSprint();
 	void UpdateStamina();
+
+	void StartAttack();
 
 public:	
 	// Called every frame

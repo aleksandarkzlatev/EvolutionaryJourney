@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "EvolutionaryJourney/Components/HealthComponent.h"
+#include "EvolutionaryJourney/Components/Health/HealthComponent.h"
 
 // Sets default values for this component's properties
 UHealthComponent::UHealthComponent()
@@ -21,7 +21,7 @@ void UHealthComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
-	
+
 }
 
 void UHealthComponent::TakeDamge(int Damage)
@@ -33,7 +33,7 @@ void UHealthComponent::TakeDamge(int Damage)
 
 	FTimerHandle InvincibilityDelay;
 	GetWorld()->GetTimerManager().SetTimer(InvincibilityDelay, this, &UHealthComponent::AllowedToTakeDamage, 0.5f, false);
-	
+
 	if (Health <= 0) {
 		Die();
 	}

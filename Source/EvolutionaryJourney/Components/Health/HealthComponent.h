@@ -7,12 +7,12 @@
 #include "HealthComponent.generated.h"
 
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class EVOLUTIONARYJOURNEY_API UHealthComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	// Sets default values for this component's properties
 	UHealthComponent();
 
@@ -32,7 +32,7 @@ protected:
 
 	void AllowedToTakeDamage();
 
-public:	
+public:
 
 	void TakeDamge(int Damage);
 
@@ -41,3 +41,4 @@ public:
 
 	float GetMaxHealth();
 };
+
