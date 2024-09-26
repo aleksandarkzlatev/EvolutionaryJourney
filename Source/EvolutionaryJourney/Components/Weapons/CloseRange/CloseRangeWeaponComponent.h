@@ -28,14 +28,13 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UPROPERTY(EditAnywhere)
-	class UStaticMeshComponent* Weapon;
+	class UStaticMeshComponent* WeaponMesh;
 
 	UPROPERTY(EditAnywhere)
-	class APlayerCharacter* WeaponOwner;
+	class AActor* WeaponOwner;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	class UPlayerCharacterAnimations* CustomAnimInstance;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class UAnimInstance* CustomAnimInstance;
 
 	void StartAttack();
 

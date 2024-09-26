@@ -34,14 +34,20 @@ APlayerCharacter::APlayerCharacter()
 	ThirdPersonCamera->SetActive(true);
 	bCanSwitchCamera = true;
 
-	CloseRangeWeapon = CreateDefaultSubobject<UCloseRangeWeaponComponent>(TEXT("Close Range Weapon"));
-	CloseRangeWeapon->Weapon->SetupAttachment(GetMesh(), FName("WeaponSocket"));
-	CloseRangeWeapon->WeaponOwner = this;
-
-	GetMesh()->SetAnimInstanceClass(UPlayerCharacterAnimations::StaticClass());
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
+	CloseRangeWeaponComponent = CreateDefaultSubobject<UCloseRangeWeaponComponent>(TEXT("Close Range Weapon System"));;
+	CloseRangeWeaponComponent->WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Weapon Mesh"));
+	CloseRangeWeaponComponent->WeaponMesh->SetupAttachment(GetMesh(), TEXT("SwordSocket"));
+	CloseRangeWeaponComponent->CustomAnimInstance = GetMesh()->GetAnimInstance();
 
 	MaxWalkSpeed = 500;
 	MaxSprintSpeed = 800;
+
+	static ConstructorHelpers::FObjectFinder<UClass> AnimBPClass(TEXT("Class'/Game/PathToYourAnimBP.YourAnimBP_C'"));
+	if (AnimBPClass.Succeeded())
+	{
+		GetMesh()->SetAnimInstanceClass(AnimBPClass.Object);
+	}
 
 }
 
@@ -57,6 +63,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	UpdateStamina();
+
 }
 
 // Called to bind functionality to input
@@ -192,5 +199,20 @@ void APlayerCharacter::UpdateStamina()
 
 void APlayerCharacter::StartAttack()
 {
-	CloseRangeWeapon->StartAttack();
+	CloseRangeWeaponComponent->StartAttack();
+}
+
+UAnimInstance* APlayerCharacter::GetCustomAnimInstance() const
+{
+
+	return GetMesh()->GetAnimInstance();
+}
+
+void APlayerCharacter::SetIsAttacking(bool bIsAttacking)
+{
+	UPlayerCharacterAnimations* AnimInstance = Cast<UPlayerCharacterAnimations>(GetCustomAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->bIsAttacking = bIsAttacking;
+	}
 }

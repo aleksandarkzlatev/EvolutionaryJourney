@@ -4,17 +4,15 @@
 #include "EvolutionaryJourney/Components/Weapons/CloseRange/CloseRangeWeaponComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "EvolutionaryJourney/Player/PlayerCharacter.h"
-#include "EvolutionaryJourney//Animations/PlayerCharacter/PlayerCharacterAnimations.h"
+#include "EvolutionaryJourney/Components/Weapons/WeaponInterface/WeaponInterface.h"
+#include "EvolutionaryJourney/Animations/AnimationInterface/AttackInterface.h"
 
-// Sets default values for this component's properties
 UCloseRangeWeaponComponent::UCloseRangeWeaponComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-
-	Weapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Weapon"));
 }
 
 
@@ -22,21 +20,31 @@ UCloseRangeWeaponComponent::UCloseRangeWeaponComponent()
 void UCloseRangeWeaponComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	
-    if (WeaponOwner)
+   
+
+    AActor* Owner = GetOwner();
+    if (Owner)
     {
-        GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("This is an on screen message!"));
-        UAnimInstance* AnimInstance = WeaponOwner->GetMesh()->GetAnimInstance();
-        if (AnimInstance)
+		WeaponOwner = Owner;
+        ACharacter* Character = Cast<ACharacter>(Owner);
+        if (Character)
         {
-            CustomAnimInstance = Cast<UPlayerCharacterAnimations>(AnimInstance);
-            if (CustomAnimInstance)
+            USkeletalMeshComponent* MeshComp = Character->GetMesh();
+            if (MeshComp)
             {
-                CustomAnimInstance->SetIsAttacking(false);
+                UAnimInstance* AnimInstance = MeshComp->GetAnimInstance();
+                if (AnimInstance)
+                {
+					CustomAnimInstance = AnimInstance;
+                    IWeaponInterface* WeaponUser = Cast<IWeaponInterface>(WeaponOwner);
+                    if (WeaponUser)
+                    {
+						WeaponUser->SetIsAttacking(false);
+                    }
+                }
             }
         }
     }
-
 }
 
 
@@ -45,17 +53,20 @@ void UCloseRangeWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickT
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// ...
 }
-
 
 void UCloseRangeWeaponComponent::StartAttack()
 {
     if (WeaponOwner)
     {
-        if (CustomAnimInstance && !CustomAnimInstance->bIsAttacking)
+        IWeaponInterface* WeaponUser = Cast<IWeaponInterface>(WeaponOwner);
+        if (WeaponUser)
         {
-            CustomAnimInstance->SetIsAttacking(true);
+			IAttackInterface* AnimInstance = Cast<IAttackInterface>(CustomAnimInstance);
+            if (AnimInstance && !AnimInstance->GetIsAttacking())
+            {
+                WeaponUser->SetIsAttacking(true);
+            }
         }
     }
 }
@@ -63,8 +74,8 @@ void UCloseRangeWeaponComponent::StartAttack()
 void UCloseRangeWeaponComponent::LineTrace()
 {
     if (WeaponOwner) {
-        FVector StartLocation = Weapon->GetSocketLocation(FName("Start"));
-        FVector EndLocation = Weapon->GetSocketLocation(FName("End"));
+        FVector StartLocation = WeaponMesh->GetSocketLocation(FName("Start"));
+        FVector EndLocation = WeaponMesh->GetSocketLocation(FName("End"));
 
         FHitResult HitResult;
         FCollisionQueryParams TraceParams;

@@ -5,11 +5,6 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
-void UPlayerCharacterAnimations::SetIsAttacking(bool bAttacking)
-{
-	bIsAttacking = bAttacking;
-}
-
 void UPlayerCharacterAnimations::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
@@ -26,4 +21,14 @@ void UPlayerCharacterAnimations::NativeUpdateAnimation(float DeltaSeconds)
 	{
 		bIsJumping = Character->GetCharacterMovement()->IsFalling();
 	}
+}
+
+void UPlayerCharacterAnimations::SetIsAttacking(bool IsAttacking)
+{
+	bIsAttacking = IsAttacking;
+}
+
+bool UPlayerCharacterAnimations::GetIsAttacking() const
+{
+	return bIsAttacking;
 }

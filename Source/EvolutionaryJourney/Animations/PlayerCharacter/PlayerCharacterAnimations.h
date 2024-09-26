@@ -4,13 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
+#include "EvolutionaryJourney/Animations/AnimationInterface/AttackInterface.h"
 #include "PlayerCharacterAnimations.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class EVOLUTIONARYJOURNEY_API UPlayerCharacterAnimations : public UAnimInstance
+class EVOLUTIONARYJOURNEY_API UPlayerCharacterAnimations : public UAnimInstance, public IAttackInterface
 {
 	GENERATED_BODY()
 	
@@ -23,14 +24,12 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	bool bIsJumping;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Animation")
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	bool bIsAttacking;
-
-	UFUNCTION(BlueprintCallable, Category = "Animation")
-	void SetIsAttacking(bool bAttacking);
 
 protected:
 
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
-
+	void SetIsAttacking(bool bIsAttacking) override;
+	bool GetIsAttacking() const override;
 };

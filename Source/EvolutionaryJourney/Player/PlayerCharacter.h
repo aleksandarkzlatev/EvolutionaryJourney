@@ -2,11 +2,12 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "EvolutionaryJourney/Components/Weapons/WeaponInterface/WeaponInterface.h"
 #include "InputActionValue.h"
 #include "PlayerCharacter.generated.h"
 
 UCLASS()
-class EVOLUTIONARYJOURNEY_API APlayerCharacter : public ACharacter
+class EVOLUTIONARYJOURNEY_API APlayerCharacter : public ACharacter, public IWeaponInterface
 {
 	GENERATED_BODY()
 
@@ -84,8 +85,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	class UHealthComponent* HealthComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	class UCloseRangeWeaponComponent* CloseRangeWeapon;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
+	class UCloseRangeWeaponComponent* CloseRangeWeaponComponent;
 
 
 	void Move(const FInputActionValue& ActionValue);
@@ -100,6 +101,11 @@ protected:
 	void UpdateStamina();
 
 	void StartAttack();
+	UAnimInstance* GetCustomAnimInstance() const override;
+	UFUNCTION(BlueprintCallable)
+	void SetIsAttacking(bool bIsAttacking) override;
+
+
 
 public:	
 	// Called every frame
