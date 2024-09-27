@@ -4,6 +4,7 @@
 #include "EvolutionaryJourney/Components/Weapons/CloseRange/CloseRangeWeaponComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "EvolutionaryJourney/Player/PlayerCharacter.h"
+#include "EvolutionaryJourney/Components/Health/HealthComponent.h"
 #include "EvolutionaryJourney/Components/Weapons/WeaponInterface/WeaponInterface.h"
 #include "EvolutionaryJourney/Animations/AnimationInterface/AttackInterface.h"
 
@@ -12,7 +13,7 @@ UCloseRangeWeaponComponent::UCloseRangeWeaponComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
+    Damage = 1;
 }
 
 
@@ -85,7 +86,11 @@ void UCloseRangeWeaponComponent::LineTrace()
 
         if (HitResult.bBlockingHit) {
             AActor* ActorHit = HitResult.GetActor();
-            ActorHit->Destroy();
+            UHealthComponent* EnemyHit = ActorHit->FindComponentByClass<UHealthComponent>();
+
+            if (IsValid(EnemyHit)) {
+                EnemyHit->TakeDamge(Damage);
+            }
         }
     }
     

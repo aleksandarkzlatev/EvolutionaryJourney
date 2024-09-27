@@ -12,6 +12,7 @@ UHealthComponent::UHealthComponent()
 
 	Health = 10;
 	MaxHealth = 10;
+	bCanTakeDamage = true;
 }
 
 
