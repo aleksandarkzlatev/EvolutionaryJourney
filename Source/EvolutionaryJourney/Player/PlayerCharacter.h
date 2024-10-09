@@ -56,9 +56,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 	class UCameraComponent* FirstPersonCamera;
 
-
 	UPROPERTY(EditAnywhere)
 	class USpringArmComponent* SpringArm;
+
 
 
 	UPROPERTY(EditAnywhere, Category = "EnhancedInput")
@@ -82,11 +82,29 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "EnhancedInput")
 	class UInputAction* AttackAction;
 
+	UPROPERTY(EditAnywhere, Category = "EnhancedInput")
+	class UInputAction* SwitchToCloseRangeWeaponAction;
+
+	UPROPERTY(EditAnywhere, Category = "EnhancedInput")
+	class UInputAction* SwitchToLongRangeWeaponAction;
+
+
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	class UHealthComponent* HealthComponent;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	class UInventoryComponent* InventoryComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	class UCloseRangeWeaponComponent* CloseRangeWeaponComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	class ULongRangeWeaponComponent* LongRangeWeaponComponent;
+
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	class UBaseWeaponClass* ActiveWeapon;
 
 
 	void Move(const FInputActionValue& ActionValue);
@@ -101,9 +119,11 @@ protected:
 	void UpdateStamina();
 
 	void StartAttack();
-	UAnimInstance* GetCustomAnimInstance() const override;
+	void SwitchToCloseRangeWeapon();
+	void SwitchToLongRangeWeapon();
+	UAnimInstance* GetCustomAnimInstance() const;
 	UFUNCTION(BlueprintCallable)
-	void SetIsAttacking(bool bIsAttacking) override;
+	void SetIsAttacking(bool bIsAttacking);
 
 
 

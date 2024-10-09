@@ -22,7 +22,7 @@ class EVOLUTIONARYJOURNEY_API IWeaponInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
+
 	virtual UAnimInstance* GetCustomAnimInstance() const = 0;
 	virtual void SetIsAttacking(bool bIsAttacking) = 0;
-
 };

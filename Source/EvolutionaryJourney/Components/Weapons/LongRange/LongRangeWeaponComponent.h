@@ -4,14 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "EvolutionaryJourney/Components/Weapons/BaseWeapon/BaseWeaponClass.h"
-#include "CloseRangeWeaponComponent.generated.h"
+#include "LongRangeWeaponComponent.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class EVOLUTIONARYJOURNEY_API UCloseRangeWeaponComponent : public UBaseWeaponClass
+class EVOLUTIONARYJOURNEY_API ULongRangeWeaponComponent : public UBaseWeaponClass
 {
 	GENERATED_BODY()
 	
+
+public:
+
+	void StartAttack() override;
 };

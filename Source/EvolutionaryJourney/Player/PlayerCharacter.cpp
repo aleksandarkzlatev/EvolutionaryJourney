@@ -7,7 +7,10 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "EvolutionaryJourney/Components/Health/HealthComponent.h"
-#include "EvolutionaryJourney//Components/Weapons/CloseRange/CloseRangeWeaponComponent.h"
+#include "EvolutionaryJourney/Components/Weapons/BaseWeapon/BaseWeaponClass.h"
+#include "EvolutionaryJourney/Components/Weapons/CloseRange/CloseRangeWeaponComponent.h"
+#include "EvolutionaryJourney/Components/Weapons/LongRange/LongRangeWeaponComponent.h"
+#include "EvolutionaryJourney/Components/InventorySystem/Inventory/InventoryComponent.h"
 #include "EvolutionaryJourney/Animations/PlayerCharacter/PlayerCharacterAnimations.h"
 
 // Sets default values
@@ -35,10 +38,18 @@ APlayerCharacter::APlayerCharacter()
 	bCanSwitchCamera = true;
 
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
-	CloseRangeWeaponComponent = CreateDefaultSubobject<UCloseRangeWeaponComponent>(TEXT("Close Range Weapon System"));;
+	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory"));
+
+	CloseRangeWeaponComponent = CreateDefaultSubobject<UCloseRangeWeaponComponent>(TEXT("Close Range Weapon System"));
 	CloseRangeWeaponComponent->WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Weapon Mesh"));
 	CloseRangeWeaponComponent->WeaponMesh->SetupAttachment(GetMesh(), TEXT("SwordSocket"));
 	CloseRangeWeaponComponent->CustomAnimInstance = GetMesh()->GetAnimInstance();
+	ActiveWeapon = CloseRangeWeaponComponent;
+
+
+	LongRangeWeaponComponent = CreateDefaultSubobject<ULongRangeWeaponComponent>(TEXT("Long Range Weapon System"));
+
+	InventoryComponent->CloseRangeWeapon = CloseRangeWeaponComponent;
 
 	MaxWalkSpeed = 500;
 	MaxSprintSpeed = 800;
@@ -55,7 +66,6 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
@@ -84,7 +94,9 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		Input->BindAction(SwitchCameraAction, ETriggerEvent::Triggered, this, &APlayerCharacter::SwitchCamera);
 		Input->BindAction(SprintAction, ETriggerEvent::Triggered, this, &APlayerCharacter::StartSprint);
 		Input->BindAction(SprintAction, ETriggerEvent::Completed, this, &APlayerCharacter::EndSprint);
-		Input->BindAction(AttackAction, ETriggerEvent::Triggered, this, &APlayerCharacter::StartAttack);
+		Input->BindAction(AttackAction, ETriggerEvent::Completed, this, &APlayerCharacter::StartAttack);
+		Input->BindAction(SwitchToCloseRangeWeaponAction, ETriggerEvent::Triggered, this, &APlayerCharacter::SwitchToCloseRangeWeapon);
+		Input->BindAction(SwitchToLongRangeWeaponAction, ETriggerEvent::Triggered, this, &APlayerCharacter::SwitchToLongRangeWeapon);
 	}
 
 
@@ -199,19 +211,42 @@ void APlayerCharacter::UpdateStamina()
 
 void APlayerCharacter::StartAttack()
 {
-	CloseRangeWeaponComponent->StartAttack();
+	if (IsValid(ActiveWeapon)) {
+		ActiveWeapon->StartAttack();
+	}
+
+	else {
+		UE_LOG(LogTemp, Error, TEXT("APlayerCharacter: ActiveWeapon is not valid"));
+	}
+}
+
+void APlayerCharacter::SwitchToCloseRangeWeapon()
+{
+	if (IsValid(CloseRangeWeaponComponent) && ActiveWeapon != CloseRangeWeaponComponent)
+	{
+		ActiveWeapon = CloseRangeWeaponComponent;
+		CloseRangeWeaponComponent->WeaponMesh->SetVisibility(true);
+	}
+}
+
+void APlayerCharacter::SwitchToLongRangeWeapon()
+{
+	if (IsValid(LongRangeWeaponComponent) && ActiveWeapon != LongRangeWeaponComponent)
+	{
+		ActiveWeapon = LongRangeWeaponComponent;
+		CloseRangeWeaponComponent->WeaponMesh->SetVisibility(false);
+	}
 }
 
 UAnimInstance* APlayerCharacter::GetCustomAnimInstance() const
 {
-
 	return GetMesh()->GetAnimInstance();
 }
 
 void APlayerCharacter::SetIsAttacking(bool bIsAttacking)
 {
 	UPlayerCharacterAnimations* AnimInstance = Cast<UPlayerCharacterAnimations>(GetCustomAnimInstance());
-	if (AnimInstance)
+	if (IsValid(AnimInstance))
 	{
 		AnimInstance->bIsAttacking = bIsAttacking;
 	}
