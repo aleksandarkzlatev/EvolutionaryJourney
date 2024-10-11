@@ -25,4 +25,6 @@ public:
 
 	virtual UAnimInstance* GetCustomAnimInstance() const = 0;
 	virtual void SetIsAttacking(bool bIsAttacking) = 0;
+	virtual bool GetIsAttacking() = 0;
+
 };

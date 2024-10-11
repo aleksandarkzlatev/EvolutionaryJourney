@@ -102,9 +102,11 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	class ULongRangeWeaponComponent* LongRangeWeaponComponent;
 
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	class UBaseWeaponClass* ActiveWeapon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapons")
+	class UStaticMeshComponent* Quiver;
 
 
 	void Move(const FInputActionValue& ActionValue);
@@ -124,7 +126,7 @@ protected:
 	UAnimInstance* GetCustomAnimInstance() const;
 	UFUNCTION(BlueprintCallable)
 	void SetIsAttacking(bool bIsAttacking);
-
+	bool GetIsAttacking();
 
 
 public:	

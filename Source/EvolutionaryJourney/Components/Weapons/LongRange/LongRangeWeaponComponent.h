@@ -16,6 +16,7 @@ class EVOLUTIONARYJOURNEY_API ULongRangeWeaponComponent : public UBaseWeaponClas
 	
 
 public:
+	ULongRangeWeaponComponent();
 
 	void StartAttack() override;
 };

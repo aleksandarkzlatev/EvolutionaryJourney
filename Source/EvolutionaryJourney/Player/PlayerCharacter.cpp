@@ -40,25 +40,18 @@ APlayerCharacter::APlayerCharacter()
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
 	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory"));
 
+	Quiver = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Quiver"));
+	Quiver->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale,TEXT("QuiverSocket"));
+
+
 	CloseRangeWeaponComponent = CreateDefaultSubobject<UCloseRangeWeaponComponent>(TEXT("Close Range Weapon System"));
-	CloseRangeWeaponComponent->WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Weapon Mesh"));
-	CloseRangeWeaponComponent->WeaponMesh->SetupAttachment(GetMesh(), TEXT("SwordSocket"));
-	CloseRangeWeaponComponent->CustomAnimInstance = GetMesh()->GetAnimInstance();
-	ActiveWeapon = CloseRangeWeaponComponent;
-
-
 	LongRangeWeaponComponent = CreateDefaultSubobject<ULongRangeWeaponComponent>(TEXT("Long Range Weapon System"));
+
 
 	InventoryComponent->CloseRangeWeapon = CloseRangeWeaponComponent;
 
 	MaxWalkSpeed = 500;
 	MaxSprintSpeed = 800;
-
-	static ConstructorHelpers::FObjectFinder<UClass> AnimBPClass(TEXT("Class'/Game/PathToYourAnimBP.YourAnimBP_C'"));
-	if (AnimBPClass.Succeeded())
-	{
-		GetMesh()->SetAnimInstanceClass(AnimBPClass.Object);
-	}
 
 }
 
@@ -66,6 +59,8 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	ActiveWeapon = CloseRangeWeaponComponent;
+	LongRangeWeaponComponent->WeaponMesh->SetVisibility(false);
 }
 
 // Called every frame
@@ -222,19 +217,21 @@ void APlayerCharacter::StartAttack()
 
 void APlayerCharacter::SwitchToCloseRangeWeapon()
 {
-	if (IsValid(CloseRangeWeaponComponent) && ActiveWeapon != CloseRangeWeaponComponent)
+	if (IsValid(CloseRangeWeaponComponent) && ActiveWeapon != CloseRangeWeaponComponent && !GetIsAttacking())
 	{
 		ActiveWeapon = CloseRangeWeaponComponent;
 		CloseRangeWeaponComponent->WeaponMesh->SetVisibility(true);
+		LongRangeWeaponComponent->WeaponMesh->SetVisibility(false);
 	}
 }
 
 void APlayerCharacter::SwitchToLongRangeWeapon()
 {
-	if (IsValid(LongRangeWeaponComponent) && ActiveWeapon != LongRangeWeaponComponent)
+	if (IsValid(LongRangeWeaponComponent) && ActiveWeapon != LongRangeWeaponComponent && !GetIsAttacking())
 	{
 		ActiveWeapon = LongRangeWeaponComponent;
 		CloseRangeWeaponComponent->WeaponMesh->SetVisibility(false);
+		LongRangeWeaponComponent->WeaponMesh->SetVisibility(true);
 	}
 }
 
@@ -248,6 +245,16 @@ void APlayerCharacter::SetIsAttacking(bool bIsAttacking)
 	UPlayerCharacterAnimations* AnimInstance = Cast<UPlayerCharacterAnimations>(GetCustomAnimInstance());
 	if (IsValid(AnimInstance))
 	{
-		AnimInstance->bIsAttacking = bIsAttacking;
+		AnimInstance->SetIsAttacking(bIsAttacking);
 	}
+}
+
+bool APlayerCharacter::GetIsAttacking()
+{
+	UPlayerCharacterAnimations* AnimInstance = Cast<UPlayerCharacterAnimations>(GetCustomAnimInstance());
+	if (IsValid(AnimInstance))
+	{
+		return AnimInstance->GetIsAttacking();
+	}
+	return false;
 }

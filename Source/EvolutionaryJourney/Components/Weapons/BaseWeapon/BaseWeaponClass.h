@@ -32,7 +32,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UAnimInstance* CustomAnimInstance;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite , Category = "Weapons")
 	class UStaticMeshComponent* WeaponMesh;
 	
 	 virtual void StartAttack();

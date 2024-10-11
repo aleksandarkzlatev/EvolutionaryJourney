@@ -3,7 +3,6 @@
 
 #include "EvolutionaryJourney/Components/Weapons/BaseWeapon/BaseWeaponClass.h"
 #include "EvolutionaryJourney/Animations/AnimationInterface/AttackInterface.h"
-#include "GameFramework/Character.h"
 #include "EvolutionaryJourney/Components/Health/HealthComponent.h"
 #include "EvolutionaryJourney/Components/Weapons/WeaponInterface/WeaponInterface.h"
 
@@ -22,49 +21,7 @@ void UBaseWeaponClass::BeginPlay()
 {
     Super::BeginPlay();
 
-    AActor* Owner = GetOwner();
-    if (IsValid(Owner))
-    {
-        WeaponOwner = Owner;
-        ACharacter* Character = Cast<ACharacter>(WeaponOwner);
-        if (IsValid(Character))
-        {
-            USkeletalMeshComponent* MeshComp = Character->GetMesh();
-            if (IsValid(MeshComp))
-            {
-                UAnimInstance* AnimInstance = MeshComp->GetAnimInstance();
-                if (IsValid(AnimInstance))
-                {
-                    CustomAnimInstance = AnimInstance;
-                    IWeaponInterface* WeaponUser = Cast<IWeaponInterface>(WeaponOwner);
-                    if (WeaponUser)
-                    {
-                        WeaponUser->SetIsAttacking(false);
-                    }
-                    else {
-                        UE_LOG(LogTemp, Error, TEXT("UBaseWeaponClass: WeaponUser is not valid"));
-                        return;
-                    }
-                }
-                else {
-                    UE_LOG(LogTemp, Error, TEXT("UBaseWeaponClass: AnimInstance is not valid"));
-                    return;
-                }
-            }
-            else {
-                UE_LOG(LogTemp, Error, TEXT("UBaseWeaponClass: MeshComp is not valid"));
-                return;
-            }
-        }
-        else {
-            UE_LOG(LogTemp, Error, TEXT("UBaseWeaponClass: Character is not valid"));
-            return;
-        }
-    }
-    else {
-        UE_LOG(LogTemp, Error, TEXT("UBaseWeaponClass: Owner is not valid"));
-        return;
-    }
+    
 	
 }
 
@@ -81,19 +38,16 @@ void UBaseWeaponClass::StartAttack()
 { 
     if (IsValid(WeaponOwner))
     {
-        IWeaponInterface* WeaponUser = Cast<IWeaponInterface>(WeaponOwner);
-        if (WeaponUser)
-        {
-            IAttackInterface* AnimInstance = Cast<IAttackInterface>(CustomAnimInstance);
-            if (AnimInstance && !AnimInstance->GetIsAttacking())
-            {
-                WeaponUser->SetIsAttacking(true);
+       IAttackInterface* AnimInstance = Cast<IAttackInterface>(CustomAnimInstance);
+       if (AnimInstance && !AnimInstance->GetIsAttacking())
+       {
+            AnimInstance->SetIsAttacking(true);
 
-                FTimerHandle InvincibilityDelay;
-                GetWorld()->GetTimerManager().SetTimer(InvincibilityDelay, this, &UBaseWeaponClass::AttackAnimDelay, 0.4f, false);
-                // WeaponMesh->SetGeberateOverlapEvents(true);
-            }
-        }
+            FTimerHandle InvincibilityDelay;
+            GetWorld()->GetTimerManager().SetTimer(InvincibilityDelay, this, &UBaseWeaponClass::AttackAnimDelay, 0.1f, false);
+            AnimInstance->SetIsAttacking(false);
+            // Weapon->SetGeberateOverlapEvents(true);
+       }
     }
 }
 
@@ -101,10 +55,10 @@ void UBaseWeaponClass::AttackAnimDelay()
 {
     if (IsValid(WeaponOwner))
 	{
-		IWeaponInterface* WeaponUser = Cast<IWeaponInterface>(WeaponOwner);
-		if (WeaponUser)
+        IAttackInterface* AnimInstance = Cast<IAttackInterface>(CustomAnimInstance);
+		if (AnimInstance)
 		{
-			WeaponUser->SetIsAttacking(false);
+            AnimInstance->SetIsAttacking(true);
 		}
 	}
 }

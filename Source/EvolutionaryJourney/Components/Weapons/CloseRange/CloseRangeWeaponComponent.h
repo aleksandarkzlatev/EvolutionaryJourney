@@ -14,4 +14,6 @@ class EVOLUTIONARYJOURNEY_API UCloseRangeWeaponComponent : public UBaseWeaponCla
 {
 	GENERATED_BODY()
 	
+public:
+	UCloseRangeWeaponComponent();
 };

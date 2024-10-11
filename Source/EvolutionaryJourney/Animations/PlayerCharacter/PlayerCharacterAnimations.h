@@ -16,7 +16,7 @@ class EVOLUTIONARYJOURNEY_API UPlayerCharacterAnimations : public UAnimInstance,
 	GENERATED_BODY()
 	
 
-public:
+protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	float Speed;
@@ -27,7 +27,7 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	bool bIsAttacking;
 
-protected:
+public:
 
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 	void SetIsAttacking(bool bIsAttacking) override;
