@@ -3,8 +3,7 @@
 
 #include "EvolutionaryJourney/Components/Weapons/BaseWeapon/BaseWeaponClass.h"
 #include "EvolutionaryJourney/Animations/AnimationInterface/AttackInterface.h"
-#include "EvolutionaryJourney/Components/Health/HealthComponent.h"
-#include "EvolutionaryJourney/Components/Weapons/WeaponInterface/WeaponInterface.h"
+
 
 // Sets default values for this component's properties
 UBaseWeaponClass::UBaseWeaponClass()
@@ -20,9 +19,6 @@ UBaseWeaponClass::UBaseWeaponClass()
 void UBaseWeaponClass::BeginPlay()
 {
     Super::BeginPlay();
-
-    
-	
 }
 
 
@@ -35,55 +31,30 @@ void UBaseWeaponClass::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 }
 
 void UBaseWeaponClass::StartAttack()
-{ 
-    if (IsValid(WeaponOwner))
-    {
-       IAttackInterface* AnimInstance = Cast<IAttackInterface>(CustomAnimInstance);
-       if (AnimInstance && !AnimInstance->GetIsAttacking())
-       {
-            AnimInstance->SetIsAttacking(true);
-
-            FTimerHandle InvincibilityDelay;
-            GetWorld()->GetTimerManager().SetTimer(InvincibilityDelay, this, &UBaseWeaponClass::AttackAnimDelay, 0.1f, false);
-            AnimInstance->SetIsAttacking(false);
-            // Weapon->SetGeberateOverlapEvents(true);
-       }
-    }
+{
 }
 
 void UBaseWeaponClass::AttackAnimDelay()
 {
     if (IsValid(WeaponOwner))
 	{
-        IAttackInterface* AnimInstance = Cast<IAttackInterface>(CustomAnimInstance);
-		if (AnimInstance)
-		{
-            AnimInstance->SetIsAttacking(true);
-		}
+        if (CustomAnimInstance == nullptr)
+        {
+            IAttackInterface* WeaponUser = Cast<IAttackInterface>(WeaponOwner);
+            CustomAnimInstance = WeaponUser->GetCustomAnimInstance();
+        }
+        else {
+            IAttackInterface* AnimInstance = Cast<IAttackInterface>(CustomAnimInstance);
+            if (AnimInstance)
+            {
+                AnimInstance->SetIsAttacking(true);
+            }
+        }
 	}
 }
 
 void UBaseWeaponClass::LineTrace()
 {
-    if (IsValid(WeaponOwner)) {
-        FVector StartLocation = WeaponMesh->GetSocketLocation(FName("Start"));
-        FVector EndLocation = WeaponMesh->GetSocketLocation(FName("End"));
-
-        FHitResult HitResult;
-        FCollisionQueryParams TraceParams;
-        TraceParams.AddIgnoredActor(WeaponOwner);
-
-        GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Visibility, TraceParams);
-
-        if (HitResult.bBlockingHit) {
-            AActor* ActorHit = HitResult.GetActor();
-            UHealthComponent* EnemyHit = ActorHit->FindComponentByClass<UHealthComponent>();
-
-            if (IsValid(EnemyHit)) {
-                EnemyHit->TakeDamge(Damage);
-            }
-        }
-    }
 }
 
 

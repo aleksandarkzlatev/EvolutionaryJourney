@@ -23,6 +23,11 @@ void UPlayerCharacterAnimations::NativeUpdateAnimation(float DeltaSeconds)
 	}
 }
 
+UAnimInstance* UPlayerCharacterAnimations::GetCustomAnimInstance() const
+{
+	return nullptr;
+}
+
 void UPlayerCharacterAnimations::SetIsAttacking(bool IsAttacking)
 {
 	bIsAttacking = IsAttacking;
@@ -31,4 +36,14 @@ void UPlayerCharacterAnimations::SetIsAttacking(bool IsAttacking)
 bool UPlayerCharacterAnimations::GetIsAttacking() const
 {
 	return bIsAttacking;
+}
+
+void UPlayerCharacterAnimations::SetAttackIsCloseRange(bool bIsCloseRange)
+{
+	bAttackIsCloseRange = bIsCloseRange;
+}
+
+bool UPlayerCharacterAnimations::GetAttackIsCloseRange() const
+{
+	return bAttackIsCloseRange;
 }

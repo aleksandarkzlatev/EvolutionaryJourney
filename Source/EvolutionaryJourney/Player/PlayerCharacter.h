@@ -2,12 +2,12 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "EvolutionaryJourney/Components/Weapons/WeaponInterface/WeaponInterface.h"
+#include "EvolutionaryJourney/Animations/AnimationInterface/AttackInterface.h"
 #include "InputActionValue.h"
 #include "PlayerCharacter.generated.h"
 
 UCLASS()
-class EVOLUTIONARYJOURNEY_API APlayerCharacter : public ACharacter, public IWeaponInterface
+class EVOLUTIONARYJOURNEY_API APlayerCharacter : public ACharacter, public IAttackInterface
 {
 	GENERATED_BODY()
 
@@ -126,9 +126,11 @@ protected:
 	UAnimInstance* GetCustomAnimInstance() const;
 	UFUNCTION(BlueprintCallable)
 	void SetIsAttacking(bool bIsAttacking);
-	bool GetIsAttacking();
+	bool GetIsAttacking() const;
+	void SetAttackIsCloseRange(bool bIsCloseRange);
+	bool GetAttackIsCloseRange() const;
 
-
+	
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

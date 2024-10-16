@@ -30,18 +30,21 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool WeaponIsActive;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UAnimInstance* CustomAnimInstance;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite , Category = "Weapons")
 	class UStaticMeshComponent* WeaponMesh;
-	
-	 virtual void StartAttack();
 
-	 void AttackAnimDelay();
+	UPROPERTY(VisibleAnywhere)
+	class AActor* WeaponOwner;
 
-	 UPROPERTY(VisibleAnywhere)
-	 class AActor* WeaponOwner;
+	UFUNCTION(BlueprintCallable)
+	virtual void LineTrace();
 
-	 UFUNCTION(BlueprintCallable)
-	 void LineTrace();
+	virtual void StartAttack();
+
+	void AttackAnimDelay();
 };

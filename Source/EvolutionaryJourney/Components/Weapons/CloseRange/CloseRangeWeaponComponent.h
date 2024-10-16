@@ -13,7 +13,14 @@ UCLASS()
 class EVOLUTIONARYJOURNEY_API UCloseRangeWeaponComponent : public UBaseWeaponClass
 {
 	GENERATED_BODY()
+
+protected:
+	void BeginPlay() override;
 	
 public:
 	UCloseRangeWeaponComponent();
+
+	void StartAttack() override;
+
+	void LineTrace() override;
 };

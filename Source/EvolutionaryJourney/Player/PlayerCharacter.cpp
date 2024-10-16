@@ -41,14 +41,31 @@ APlayerCharacter::APlayerCharacter()
 	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory"));
 
 	Quiver = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Quiver"));
-	Quiver->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale,TEXT("QuiverSocket"));
+	Quiver->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale,TEXT("QuiverSocket"));
 
 
 	CloseRangeWeaponComponent = CreateDefaultSubobject<UCloseRangeWeaponComponent>(TEXT("Close Range Weapon System"));
+	CloseRangeWeaponComponent->WeaponIsActive = true;
+	if (IsValid(CloseRangeWeaponComponent->WeaponMesh))
+	{
+		CloseRangeWeaponComponent->WeaponMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("WeaponSocket"));
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("APlayerCharacter: CloseRangeWeaponComponent->WeaponMesh is not valid"));
+	}
 	LongRangeWeaponComponent = CreateDefaultSubobject<ULongRangeWeaponComponent>(TEXT("Long Range Weapon System"));
+	LongRangeWeaponComponent->WeaponIsActive = false;
+	if (IsValid(LongRangeWeaponComponent->WeaponMesh))
+	{
+		LongRangeWeaponComponent->WeaponMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("BowSocket"));
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("APlayerCharacter: LongRangeWeaponComponent->WeaponMesh is not valid"));
+	}
 
 
 	InventoryComponent->CloseRangeWeapon = CloseRangeWeaponComponent;
+	InventoryComponent->LongRangeWeapon = LongRangeWeaponComponent;
 
 	MaxWalkSpeed = 500;
 	MaxSprintSpeed = 800;
@@ -61,6 +78,8 @@ void APlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 	ActiveWeapon = CloseRangeWeaponComponent;
 	LongRangeWeaponComponent->WeaponMesh->SetVisibility(false);
+	CloseRangeWeaponComponent->CustomAnimInstance = GetCustomAnimInstance();
+	LongRangeWeaponComponent->CustomAnimInstance = GetCustomAnimInstance();
 }
 
 // Called every frame
@@ -220,6 +239,8 @@ void APlayerCharacter::SwitchToCloseRangeWeapon()
 	if (IsValid(CloseRangeWeaponComponent) && ActiveWeapon != CloseRangeWeaponComponent && !GetIsAttacking())
 	{
 		ActiveWeapon = CloseRangeWeaponComponent;
+		CloseRangeWeaponComponent->WeaponIsActive = true;
+		LongRangeWeaponComponent->WeaponIsActive = false;
 		CloseRangeWeaponComponent->WeaponMesh->SetVisibility(true);
 		LongRangeWeaponComponent->WeaponMesh->SetVisibility(false);
 	}
@@ -230,6 +251,8 @@ void APlayerCharacter::SwitchToLongRangeWeapon()
 	if (IsValid(LongRangeWeaponComponent) && ActiveWeapon != LongRangeWeaponComponent && !GetIsAttacking())
 	{
 		ActiveWeapon = LongRangeWeaponComponent;
+		CloseRangeWeaponComponent->WeaponIsActive = false;
+		LongRangeWeaponComponent->WeaponIsActive = true;
 		CloseRangeWeaponComponent->WeaponMesh->SetVisibility(false);
 		LongRangeWeaponComponent->WeaponMesh->SetVisibility(true);
 	}
@@ -249,12 +272,31 @@ void APlayerCharacter::SetIsAttacking(bool bIsAttacking)
 	}
 }
 
-bool APlayerCharacter::GetIsAttacking()
+bool APlayerCharacter::GetIsAttacking() const
 {
 	UPlayerCharacterAnimations* AnimInstance = Cast<UPlayerCharacterAnimations>(GetCustomAnimInstance());
 	if (IsValid(AnimInstance))
 	{
 		return AnimInstance->GetIsAttacking();
+	}
+	return false;
+}
+
+void APlayerCharacter::SetAttackIsCloseRange(bool bIsCloseRange)
+{
+	UPlayerCharacterAnimations* AnimInstance = Cast<UPlayerCharacterAnimations>(GetCustomAnimInstance());
+	if (IsValid(AnimInstance))
+	{
+		AnimInstance->SetAttackIsCloseRange(bIsCloseRange);
+	}
+}
+
+bool APlayerCharacter::GetAttackIsCloseRange() const
+{
+	UPlayerCharacterAnimations* AnimInstance = Cast<UPlayerCharacterAnimations>(GetCustomAnimInstance());
+	if (IsValid(AnimInstance))
+	{
+		return AnimInstance->GetAttackIsCloseRange();
 	}
 	return false;
 }

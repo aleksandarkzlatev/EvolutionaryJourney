@@ -14,7 +14,6 @@ UCLASS()
 class EVOLUTIONARYJOURNEY_API UPlayerCharacterAnimations : public UAnimInstance, public IAttackInterface
 {
 	GENERATED_BODY()
-	
 
 protected:
 
@@ -27,9 +26,18 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	bool bIsAttacking;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
+	bool bAttackIsCloseRange;
+
 public:
 
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
-	void SetIsAttacking(bool bIsAttacking) override;
-	bool GetIsAttacking() const override;
+	void SetIsAttacking(bool bIsAttacking);
+	bool GetIsAttacking() const;
+	void SetAttackIsCloseRange(bool bIsCloseRange);
+	bool GetAttackIsCloseRange() const;
+
+private:
+	UAnimInstance* GetCustomAnimInstance() const;
+
 };
