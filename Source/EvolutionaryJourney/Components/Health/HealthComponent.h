@@ -34,7 +34,7 @@ protected:
 
 public:
 
-	void TakeDamge(int Damage);
+	void TakeDamage(int Damage);
 
 	float GetHealth();
 	void RecoverHealth(float addedHealth);

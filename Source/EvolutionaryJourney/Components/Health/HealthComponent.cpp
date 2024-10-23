@@ -25,7 +25,7 @@ void UHealthComponent::BeginPlay()
 
 }
 
-void UHealthComponent::TakeDamge(int Damage)
+void UHealthComponent::TakeDamage(int Damage)
 {
 	if (bCanTakeDamage) {
 		Health -= Damage;

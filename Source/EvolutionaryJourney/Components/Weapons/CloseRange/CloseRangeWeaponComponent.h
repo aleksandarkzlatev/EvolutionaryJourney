@@ -3,24 +3,35 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EvolutionaryJourney/Components/Weapons/BaseWeapon/BaseWeaponClass.h"
+#include "EvolutionaryJourney/Components/Weapons/BaseWeaponComponent/BaseWeaponComponent.h"
 #include "CloseRangeWeaponComponent.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class EVOLUTIONARYJOURNEY_API UCloseRangeWeaponComponent : public UBaseWeaponClass
+class EVOLUTIONARYJOURNEY_API UCloseRangeWeaponComponent : public UBaseWeaponComponent
 {
 	GENERATED_BODY()
 
+	UCloseRangeWeaponComponent();
+
+
 protected:
 	void BeginPlay() override;
-	
+
 public:
-	UCloseRangeWeaponComponent();
+
+	UPROPERTY(EditAnywhere, Category = "Close Range Weapon")
+	class ABaseCloseRangeWeapon* CloseRangeWeapon;
 
 	void StartAttack() override;
 
-	void LineTrace() override;
+	UFUNCTION()
+	void BeginOverlap(AActor* OverlappedActor, AActor* OtherActor);
+
+	UFUNCTION()
+	void EndOverlap(AActor* OverlappedActor, AActor* OtherActor);
+
 };
+

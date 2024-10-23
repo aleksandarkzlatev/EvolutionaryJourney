@@ -2,14 +2,15 @@
 
 
 #include "EvolutionaryJourney/Components/Weapons/CloseRange/CloseRangeWeaponComponent.h"
-#include "GameFramework/Character.h"
 #include "EvolutionaryJourney/Animations/AnimationInterface/AttackInterface.h"
-#include "EvolutionaryJourney/Components/Health/HealthComponent.h"
+#include "GameFramework/Character.h"
+#include "EvolutionaryJourney/Components/Weapons/BaseCloseRangeWeapon/BaseCloseRangeWeapon.h"
 
 UCloseRangeWeaponComponent::UCloseRangeWeaponComponent()
 {
-    WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Close Range Weapon"));
-    
+	CloseRangeWeapon = CreateDefaultSubobject<ABaseCloseRangeWeapon>(TEXT("Close Range Weapon"));
+    /*CloseRangeWeapon->OnActorBeginOverlap.AddDynamic(this, &UCloseRangeWeaponComponent::BeginOverlap);
+    CloseRangeWeapon->OnActorEndOverlap.AddDynamic(this, &UCloseRangeWeaponComponent::EndOverlap);*/
 }
 
 void UCloseRangeWeaponComponent::BeginPlay()
@@ -55,39 +56,27 @@ void UCloseRangeWeaponComponent::StartAttack()
 {
     if (IsValid(WeaponOwner))
     {
-        IAttackInterface* AnimInstance = Cast<IAttackInterface>(CustomAnimInstance);
-        if (AnimInstance && !AnimInstance->GetIsAttacking() && WeaponIsActive)
+        IAttackInterface* WeaponUser = Cast<IAttackInterface>(WeaponOwner);
+        if (WeaponUser && !WeaponUser->GetIsAttacking() && WeaponIsActive)
         {
-            AnimInstance->SetIsAttacking(true);
-			AnimInstance->SetAttackIsCloseRange(true);
+            WeaponUser->SetIsAttacking(true);
+            WeaponUser->SetAttackIsCloseRange(true);
             FTimerHandle InvincibilityDelay;
-            GetWorld()->GetTimerManager().SetTimer(InvincibilityDelay, this, &UBaseWeaponClass::AttackAnimDelay, 0.3f, false);
-            AnimInstance->SetIsAttacking(false);
-            // Weapon->SetGeberateOverlapEvents(true);
-        }
-	}
-}
-
-void UCloseRangeWeaponComponent::LineTrace()
-{
-    if (IsValid(WeaponOwner)) {
-
-        FVector StartLocation = WeaponMesh->GetSocketLocation(FName("Start"));
-        FVector EndLocation = WeaponMesh->GetSocketLocation(FName("End"));
-
-        FHitResult HitResult;
-        FCollisionQueryParams TraceParams;
-        TraceParams.AddIgnoredActor(WeaponOwner);
-
-        GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Visibility, TraceParams);
-
-        if (HitResult.bBlockingHit) {
-            AActor* ActorHit = HitResult.GetActor();
-            UHealthComponent* EnemyHit = ActorHit->FindComponentByClass<UHealthComponent>();
-    
-            if (IsValid(EnemyHit)) {
-                EnemyHit->TakeDamge(Damage);
-            }
+            GetWorld()->GetTimerManager().SetTimer(InvincibilityDelay, this, &UBaseWeaponComponent::AttackAnimDelay, 0.3f, false);
+            WeaponUser->SetIsAttacking(false);
         }
     }
+}
+
+void UCloseRangeWeaponComponent::BeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
+{
+    if (IsValid(OtherActor) && OtherActor != WeaponOwner)
+    {
+        GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Overlap"));
+    }
+}
+
+void UCloseRangeWeaponComponent::EndOverlap(AActor* OverlappedActor, AActor* OtherActor)
+{
+    GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Overlap"));
 }

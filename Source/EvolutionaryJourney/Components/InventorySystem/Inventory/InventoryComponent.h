@@ -27,9 +27,5 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
 	class AActor* Owner;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
-	class UCloseRangeWeaponComponent* CloseRangeWeapon;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
-	class ULongRangeWeaponComponent* LongRangeWeapon;
+	
 };

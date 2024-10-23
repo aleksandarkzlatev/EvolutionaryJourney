@@ -103,7 +103,7 @@ protected:
 	class ULongRangeWeaponComponent* LongRangeWeaponComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	class UBaseWeaponClass* ActiveWeapon;
+	class UBaseWeaponComponent* ActiveWeapon;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapons")
 	class UStaticMeshComponent* Quiver;

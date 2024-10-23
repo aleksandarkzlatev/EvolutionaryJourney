@@ -4,28 +4,25 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "BaseWeaponClass.generated.h"
+#include "BaseWeaponComponent.generated.h"
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class EVOLUTIONARYJOURNEY_API UBaseWeaponClass : public UActorComponent
+class EVOLUTIONARYJOURNEY_API UBaseWeaponComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	// Sets default values for this component's properties
-	UBaseWeaponClass();
+	UBaseWeaponComponent();
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditAnywhere, Category = "Damage")
-	int Damage;
-
 	
 
-public:	
+public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
@@ -35,16 +32,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UAnimInstance* CustomAnimInstance;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite , Category = "Weapons")
-	class UStaticMeshComponent* WeaponMesh;
-
 	UPROPERTY(VisibleAnywhere)
 	class AActor* WeaponOwner;
-
-	UFUNCTION(BlueprintCallable)
-	virtual void LineTrace();
 
 	virtual void StartAttack();
 
 	void AttackAnimDelay();
+
+	UFUNCTION()
+	virtual void OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit);
+		
 };

@@ -7,11 +7,12 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "EvolutionaryJourney/Components/Health/HealthComponent.h"
-#include "EvolutionaryJourney/Components/Weapons/BaseWeapon/BaseWeaponClass.h"
+#include "EvolutionaryJourney/Components/Weapons/BaseWeaponComponent/BaseWeaponComponent.h"
 #include "EvolutionaryJourney/Components/Weapons/CloseRange/CloseRangeWeaponComponent.h"
 #include "EvolutionaryJourney/Components/Weapons/LongRange/LongRangeWeaponComponent.h"
 #include "EvolutionaryJourney/Components/InventorySystem/Inventory/InventoryComponent.h"
 #include "EvolutionaryJourney/Animations/PlayerCharacter/PlayerCharacterAnimations.h"
+#include "EvolutionaryJourney/Components/Weapons/BaseCloseRangeWeapon/BaseCloseRangeWeapon.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -46,9 +47,9 @@ APlayerCharacter::APlayerCharacter()
 
 	CloseRangeWeaponComponent = CreateDefaultSubobject<UCloseRangeWeaponComponent>(TEXT("Close Range Weapon System"));
 	CloseRangeWeaponComponent->WeaponIsActive = true;
-	if (IsValid(CloseRangeWeaponComponent->WeaponMesh))
+	if (CloseRangeWeaponComponent->CloseRangeWeapon->WeaponMesh)
 	{
-		CloseRangeWeaponComponent->WeaponMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("WeaponSocket"));
+		CloseRangeWeaponComponent->CloseRangeWeapon->WeaponMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("WeaponSocket"));
 	}
 	else {
 		UE_LOG(LogTemp, Error, TEXT("APlayerCharacter: CloseRangeWeaponComponent->WeaponMesh is not valid"));
@@ -62,10 +63,6 @@ APlayerCharacter::APlayerCharacter()
 	else {
 		UE_LOG(LogTemp, Error, TEXT("APlayerCharacter: LongRangeWeaponComponent->WeaponMesh is not valid"));
 	}
-
-
-	InventoryComponent->CloseRangeWeapon = CloseRangeWeaponComponent;
-	InventoryComponent->LongRangeWeapon = LongRangeWeaponComponent;
 
 	MaxWalkSpeed = 500;
 	MaxSprintSpeed = 800;
@@ -241,7 +238,7 @@ void APlayerCharacter::SwitchToCloseRangeWeapon()
 		ActiveWeapon = CloseRangeWeaponComponent;
 		CloseRangeWeaponComponent->WeaponIsActive = true;
 		LongRangeWeaponComponent->WeaponIsActive = false;
-		CloseRangeWeaponComponent->WeaponMesh->SetVisibility(true);
+		CloseRangeWeaponComponent->CloseRangeWeapon->WeaponMesh->SetVisibility(true);
 		LongRangeWeaponComponent->WeaponMesh->SetVisibility(false);
 	}
 }
@@ -253,7 +250,7 @@ void APlayerCharacter::SwitchToLongRangeWeapon()
 		ActiveWeapon = LongRangeWeaponComponent;
 		CloseRangeWeaponComponent->WeaponIsActive = false;
 		LongRangeWeaponComponent->WeaponIsActive = true;
-		CloseRangeWeaponComponent->WeaponMesh->SetVisibility(false);
+		CloseRangeWeaponComponent->CloseRangeWeapon->WeaponMesh->SetVisibility(false);
 		LongRangeWeaponComponent->WeaponMesh->SetVisibility(true);
 	}
 }

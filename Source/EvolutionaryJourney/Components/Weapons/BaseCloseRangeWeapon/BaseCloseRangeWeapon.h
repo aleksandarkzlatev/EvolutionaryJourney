@@ -4,16 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "ProjectileActor.generated.h"
+#include "BaseCloseRangeWeapon.generated.h"
 
 UCLASS()
-class EVOLUTIONARYJOURNEY_API AProjectileActor : public AActor
+class EVOLUTIONARYJOURNEY_API ABaseCloseRangeWeapon : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	AProjectileActor();
+	ABaseCloseRangeWeapon();
 
 protected:
 	// Called when the game starts or when spawned
@@ -24,8 +24,11 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditAnywhere)
-	class UStaticMeshComponent* ProjectileMesh;
+	int Damage;
 
 	UPROPERTY(EditAnywhere)
-	class UProjectileMovementComponent* ProjectileMovement;
+	class UStaticMeshComponent* WeaponMesh;
+
+	UPROPERTY(EditAnywhere)
+	class UCapsuleComponent* CollisionComponent;
 };
