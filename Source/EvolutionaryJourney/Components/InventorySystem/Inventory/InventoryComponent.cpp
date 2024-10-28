@@ -2,8 +2,6 @@
 
 
 #include "EvolutionaryJourney/Components/InventorySystem/Inventory/InventoryComponent.h"
-#include "EvolutionaryJourney/Components/Weapons/CloseRange/CloseRangeWeaponComponent.h"
-#include "EvolutionaryJourney/Components/Weapons/LongRange/LongRangeWeaponComponent.h"
 
 // Sets default values for this component's properties
 UInventoryComponent::UInventoryComponent()

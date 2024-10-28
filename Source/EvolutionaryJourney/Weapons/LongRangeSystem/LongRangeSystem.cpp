@@ -1,25 +1,29 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "EvolutionaryJourney/Components/Weapons/LongRange/LongRangeWeaponComponent.h"
+#include "EvolutionaryJourney/Weapons/LongRangeSystem/LongRangeSystem.h"
 #include "GameFramework/Character.h"
 #include "EvolutionaryJourney/Animations/AnimationInterface/AttackInterface.h"
-#include "EvolutionaryJourney/Components/Weapons/BaseProjectile/BaseProjectile.h"
 #include "EvolutionaryJourney/Components/Health/HealthComponent.h"
+#include "EvolutionaryJourney/Weapons/BaseProjectile/BaseProjectile.h"
+#include "Components/ChildActorComponent.h"
 
-ULongRangeWeaponComponent::ULongRangeWeaponComponent()
+
+
+ALongRangeSystem::ALongRangeSystem()
 {
-    WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Long Range Weapon"));
-
+    RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 }
 
-void ULongRangeWeaponComponent::BeginPlay()
+void ALongRangeSystem::BeginPlay()
 {
-    Super::BeginPlay();
-    AActor* Owner = GetOwner();
-    if (IsValid(Owner))
+}
+
+void ALongRangeSystem::InitializeWeapon(AActor* InitOwner)
+{
+    if (IsValid(InitOwner))
     {
-        WeaponOwner = Owner;
+        WeaponOwner = InitOwner;
         ACharacter* Character = Cast<ACharacter>(WeaponOwner);
         if (IsValid(Character))
         {
@@ -52,8 +56,7 @@ void ULongRangeWeaponComponent::BeginPlay()
     }
 }
 
-
-void ULongRangeWeaponComponent::StartAttack()
+void ALongRangeSystem::StartAttack()
 {
     IAttackInterface* WeaponUser = Cast<IAttackInterface>(WeaponOwner);
     if (IsValid(WeaponOwner) && WeaponIsActive && !WeaponUser->GetIsAttacking()) {
@@ -70,9 +73,9 @@ void ULongRangeWeaponComponent::StartAttack()
             FVector SpawnLocation = OwnerLocation + (ForwardVector * SpawnDistance);
 
             SpawnedProjectile = GetWorld()->SpawnActor<ABaseProjectile>(ProjectileActor, SpawnLocation, OwnerRotation);
-            SpawnedProjectile->OnActorHit.AddDynamic(this, &ULongRangeWeaponComponent::OnHit);
+            SpawnedProjectile->OnActorHit.AddDynamic(this, &ALongRangeSystem::OnHit);
             FTimerHandle InvincibilityDelay;
-            GetWorld()->GetTimerManager().SetTimer(InvincibilityDelay, this, &UBaseWeaponComponent::AttackAnimDelay, 0.3f, false);
+            GetWorld()->GetTimerManager().SetTimer(InvincibilityDelay, this, &ALongRangeSystem::AttackAnimDelay, 0.3f, false);
 
             WeaponUser->SetIsAttacking(false);
         }
@@ -83,13 +86,15 @@ void ULongRangeWeaponComponent::StartAttack()
     }
 }
 
-void ULongRangeWeaponComponent::OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit)
+
+
+void ALongRangeSystem::OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit)
 {
     if (IsValid(OtherActor) && OtherActor != WeaponOwner)
     {
-		UHealthComponent* HealthComponent = OtherActor->FindComponentByClass<UHealthComponent>();
+        UHealthComponent* HealthComponent = OtherActor->FindComponentByClass<UHealthComponent>();
         if (IsValid(HealthComponent)) {
-			HealthComponent->TakeDamage(SpawnedProjectile->Damage);
+            HealthComponent->TakeDamage(SpawnedProjectile->Damage);
         }
         SpawnedProjectile->Destroy();
     }

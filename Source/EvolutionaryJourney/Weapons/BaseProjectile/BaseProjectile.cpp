@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "EvolutionaryJourney/Components/Weapons/BaseProjectile/BaseProjectile.h"
+#include "EvolutionaryJourney/Weapons/BaseProjectile/BaseProjectile.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 
@@ -18,6 +18,8 @@ ABaseProjectile::ABaseProjectile()
 
 	ProjectileMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Projectile Mesh"));
 	ProjectileMesh->SetupAttachment(CollisionComponent);
+	ProjectileMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
 
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Projectile Movement"));
 	ProjectileMovement->InitialSpeed = 800;
@@ -26,12 +28,11 @@ ABaseProjectile::ABaseProjectile()
 
 	Damage = 1;
 }
-
 // Called when the game starts or when spawned
 void ABaseProjectile::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 }
 
 // Called every frame

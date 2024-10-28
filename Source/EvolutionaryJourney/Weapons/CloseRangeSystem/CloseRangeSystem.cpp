@@ -1,24 +1,29 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "EvolutionaryJourney/Components/Weapons/CloseRange/CloseRangeWeaponComponent.h"
-#include "EvolutionaryJourney/Animations/AnimationInterface/AttackInterface.h"
+#include "EvolutionaryJourney/Weapons/CloseRangeSystem/CloseRangeSystem.h"
 #include "GameFramework/Character.h"
-#include "EvolutionaryJourney/Components/Weapons/BaseCloseRangeWeapon/BaseCloseRangeWeapon.h"
+#include "EvolutionaryJourney/Animations/AnimationInterface/AttackInterface.h"
+#include "EvolutionaryJourney/Components/Health/HealthComponent.h"
 
-UCloseRangeWeaponComponent::UCloseRangeWeaponComponent()
+
+
+
+ACloseRangeSystem::ACloseRangeSystem()
 {
-	CloseRangeWeapon = CreateDefaultSubobject<ABaseCloseRangeWeapon>(TEXT("Close Range Weapon"));
-    /*CloseRangeWeapon->OnActorBeginOverlap.AddDynamic(this, &UCloseRangeWeaponComponent::BeginOverlap);
-    CloseRangeWeapon->OnActorEndOverlap.AddDynamic(this, &UCloseRangeWeaponComponent::EndOverlap);*/
+    RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 }
 
-void UCloseRangeWeaponComponent::BeginPlay()
+void ACloseRangeSystem::BeginPlay()
 {
-    AActor* Owner = GetOwner();
-    if (IsValid(Owner))
+	Super::BeginPlay();
+}
+
+void ACloseRangeSystem::InitializeWeapon(AActor* InitOwner)
+{
+    if (IsValid(InitOwner))
     {
-        WeaponOwner = Owner;
+        WeaponOwner = InitOwner;
         ACharacter* Character = Cast<ACharacter>(WeaponOwner);
         if (IsValid(Character))
         {
@@ -52,23 +57,28 @@ void UCloseRangeWeaponComponent::BeginPlay()
 }
 
 
-void UCloseRangeWeaponComponent::StartAttack()
+void ACloseRangeSystem::StartAttack()
 {
     if (IsValid(WeaponOwner))
     {
         IAttackInterface* WeaponUser = Cast<IAttackInterface>(WeaponOwner);
         if (WeaponUser && !WeaponUser->GetIsAttacking() && WeaponIsActive)
         {
+
             WeaponUser->SetIsAttacking(true);
             WeaponUser->SetAttackIsCloseRange(true);
             FTimerHandle InvincibilityDelay;
-            GetWorld()->GetTimerManager().SetTimer(InvincibilityDelay, this, &UBaseWeaponComponent::AttackAnimDelay, 0.3f, false);
+            GetWorld()->GetTimerManager().SetTimer(InvincibilityDelay, this, &ACloseRangeSystem::AttackAnimDelay, 0.3f, false);
             WeaponUser->SetIsAttacking(false);
         }
     }
+	else {
+		UE_LOG(LogTemp, Error, TEXT("UCloseRangeWeaponComponent: Owner is not valid"));
+		return;
+	}
 }
 
-void UCloseRangeWeaponComponent::BeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
+void ACloseRangeSystem::BeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
 {
     if (IsValid(OtherActor) && OtherActor != WeaponOwner)
     {
@@ -76,7 +86,7 @@ void UCloseRangeWeaponComponent::BeginOverlap(AActor* OverlappedActor, AActor* O
     }
 }
 
-void UCloseRangeWeaponComponent::EndOverlap(AActor* OverlappedActor, AActor* OtherActor)
+void ACloseRangeSystem::EndOverlap(AActor* OverlappedActor, AActor* OtherActor)
 {
     GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Overlap"));
 }

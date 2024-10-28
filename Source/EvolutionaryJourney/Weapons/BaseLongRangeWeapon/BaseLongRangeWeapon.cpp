@@ -1,33 +1,32 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "EvolutionaryJourney/Components/Weapons/BaseCloseRangeWeapon/BaseCloseRangeWeapon.h"
-#include "Components/CapsuleComponent.h"
+#include "EvolutionaryJourney/Weapons/BaseLongRangeWeapon/BaseLongRangeWeapon.h"
+#include "Components/StaticMeshComponent.h"
+#include "EvolutionaryJourney/Weapons/BaseProjectile/BaseProjectile.h"
 
 // Sets default values
-ABaseCloseRangeWeapon::ABaseCloseRangeWeapon()
+ABaseLongRangeWeapon::ABaseLongRangeWeapon()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
-	CollisionComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("CollisionComponent"));
-	RootComponent = CollisionComponent;
-
 	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
-	WeaponMesh->SetupAttachment(CollisionComponent);
+	RootComponent = WeaponMesh;
+	WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	Damage = 1;
+
 }
 
 // Called when the game starts or when spawned
-void ABaseCloseRangeWeapon::BeginPlay()
+void ABaseLongRangeWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 	
 }
 
 // Called every frame
-void ABaseCloseRangeWeapon::Tick(float DeltaTime)
+void ABaseLongRangeWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
