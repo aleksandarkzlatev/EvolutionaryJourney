@@ -18,16 +18,18 @@ class EVOLUTIONARYJOURNEY_API ACloseRangeSystem : public ABaseWeaponSystem
 
 public:
 
+	UPROPERTY(EditAnywhere, Category = "CloseRangeSystem")
+	class ABaseCloseRangeWeapon* Weapon;
+
 	void BeginPlay() override;
 
 	void InitializeWeapon(AActor* InitOwner);
 
 	void StartAttack() override;
 
-	UFUNCTION()
-	void BeginOverlap(AActor* OverlappedActor, AActor* OtherActor);
+	void AttackAnimDelay();
 
 	UFUNCTION()
-	void EndOverlap(AActor* OverlappedActor, AActor* OtherActor);
+	void BeginOverlap(AActor* OverlappedActor, AActor* OtherActor);
 
 };

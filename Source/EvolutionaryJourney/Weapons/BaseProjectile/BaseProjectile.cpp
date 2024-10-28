@@ -22,9 +22,9 @@ ABaseProjectile::ABaseProjectile()
 
 
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Projectile Movement"));
-	ProjectileMovement->InitialSpeed = 800;
-	ProjectileMovement->MaxSpeed = 4000;
-	ProjectileMovement->ProjectileGravityScale = 0.5;
+	ProjectileMovement->InitialSpeed = 2000;
+	ProjectileMovement->MaxSpeed = 5000;
+	ProjectileMovement->ProjectileGravityScale = 0.25;
 
 	Damage = 1;
 }

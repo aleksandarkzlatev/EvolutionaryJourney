@@ -64,20 +64,9 @@ void ALongRangeSystem::StartAttack()
         {
             WeaponUser->SetIsAttacking(true);
             WeaponUser->SetAttackIsCloseRange(false);
-            FVector OwnerLocation = WeaponOwner->GetActorLocation();
-            FRotator OwnerRotation = WeaponOwner->GetActorRotation();
+            FTimerHandle AttackDelay;
+            GetWorld()->GetTimerManager().SetTimer(AttackDelay, this, &ALongRangeSystem::SpawnProjectile, 3.3f, false);
 
-            FVector ForwardVector = WeaponOwner->GetActorForwardVector();
-
-            float SpawnDistance = 200.0f;
-            FVector SpawnLocation = OwnerLocation + (ForwardVector * SpawnDistance);
-
-            SpawnedProjectile = GetWorld()->SpawnActor<ABaseProjectile>(ProjectileActor, SpawnLocation, OwnerRotation);
-            SpawnedProjectile->OnActorHit.AddDynamic(this, &ALongRangeSystem::OnHit);
-            FTimerHandle InvincibilityDelay;
-            GetWorld()->GetTimerManager().SetTimer(InvincibilityDelay, this, &ALongRangeSystem::AttackAnimDelay, 0.3f, false);
-
-            WeaponUser->SetIsAttacking(false);
         }
         else {
             UE_LOG(LogTemp, Error, TEXT("ULongRangeWeaponComponent: WeaponUser is not valid"));
@@ -86,9 +75,23 @@ void ALongRangeSystem::StartAttack()
     }
 }
 
+void ALongRangeSystem::SpawnProjectile()
+{
+    IAttackInterface* WeaponUser = Cast<IAttackInterface>(WeaponOwner);
+    FVector OwnerLocation = WeaponOwner->GetActorLocation();
+    FRotator OwnerRotation = WeaponOwner->GetActorRotation();
 
+    FVector ForwardVector = WeaponOwner->GetActorForwardVector();
 
-void ALongRangeSystem::OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit)
+    float SpawnDistance = 200.0f;
+    FVector SpawnLocation = OwnerLocation + (ForwardVector * SpawnDistance);
+
+    SpawnedProjectile = GetWorld()->SpawnActor<ABaseProjectile>(ProjectileActor, SpawnLocation, OwnerRotation);
+    SpawnedProjectile->OnActorBeginOverlap.AddDynamic(this, &ALongRangeSystem::BeginOverlap);
+    WeaponUser->SetIsAttacking(false);
+}
+
+void ALongRangeSystem::BeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
 {
     if (IsValid(OtherActor) && OtherActor != WeaponOwner)
     {

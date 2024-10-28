@@ -13,6 +13,8 @@
 #include "EvolutionaryJourney/Components/InventorySystem/Inventory/InventoryComponent.h"
 #include "EvolutionaryJourney/Animations/PlayerCharacter/PlayerCharacterAnimations.h"
 #include "Components/ChildActorComponent.h"
+#include "EvolutionaryJourney/Weapons/BaseCloseRangeWeapon/BaseCloseRangeWeapon.h"
+#include "EvolutionaryJourney/Weapons/BaseLongRangeWeapon/BaseLongRangeWeapon.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -75,15 +77,30 @@ void APlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 	CloseRange = GetWorld()->SpawnActor<ACloseRangeSystem>(ACloseRangeSystem::StaticClass());
 	CloseRange->AttachToActor(this, FAttachmentTransformRules::SnapToTargetIncludingScale);
-	CloseRange->InitializeWeapon(this);
 	CloseRange->WeaponIsActive = true;
-	CloseRange->CustomAnimInstance = GetCustomAnimInstance();
+	ABaseCloseRangeWeapon* CloseRangeSystem = Cast<ABaseCloseRangeWeapon>(CloseRangeWeaponMesh->GetChildActor());
+	if (IsValid(CloseRangeSystem))
+	{
+		CloseRange->Weapon = CloseRangeSystem;
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("APlayerCharacter: CloseRangeSystem is not valid"));
+	}
+	CloseRange->InitializeWeapon(this);
+
 
 	LongRange = GetWorld()->SpawnActor<ALongRangeSystem>(ALongRangeSystem::StaticClass());
 	LongRange->AttachToActor(this, FAttachmentTransformRules::SnapToTargetIncludingScale);
-	LongRange->InitializeWeapon(this);
 	LongRange->WeaponIsActive = false;
-	LongRange->CustomAnimInstance = GetCustomAnimInstance();
+    ABaseLongRangeWeapon* LongRangeSystem = Cast<ABaseLongRangeWeapon>(LongRangeWeaponMesh->GetChildActor());
+    if (IsValid(LongRangeSystem))
+    {
+        LongRange->ProjectileActor = LongRangeSystem->ProjectileActor;
+    }
+    else {
+        UE_LOG(LogTemp, Error, TEXT("APlayerCharacter: LongRangeSystem is not valid"));
+    }
+	LongRange->InitializeWeapon(this);
 
 
 	ActiveWeapon = CloseRange;

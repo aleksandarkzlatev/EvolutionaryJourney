@@ -26,14 +26,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool WeaponIsActive;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	class UAnimInstance* CustomAnimInstance;
-
 	UPROPERTY(VisibleAnywhere)
 	class AActor* WeaponOwner;
 
 	virtual void StartAttack();
-
-	void AttackAnimDelay();
 
 };

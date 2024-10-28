@@ -5,7 +5,8 @@
 #include "GameFramework/Character.h"
 #include "EvolutionaryJourney/Animations/AnimationInterface/AttackInterface.h"
 #include "EvolutionaryJourney/Components/Health/HealthComponent.h"
-
+#include "EvolutionaryJourney/Weapons/BaseCloseRangeWeapon/BaseCloseRangeWeapon.h"
+#include "Components/CapsuleComponent.h"
 
 
 
@@ -33,6 +34,7 @@ void ACloseRangeSystem::InitializeWeapon(AActor* InitOwner)
                 IAttackInterface* WeaponUser = Cast<IAttackInterface>(WeaponOwner);
                 if (WeaponUser)
                 {
+                    Weapon->OnActorBeginOverlap.AddDynamic(this, &ACloseRangeSystem::BeginOverlap);
                     WeaponUser->SetIsAttacking(false);
                 }
                 else {
@@ -64,12 +66,11 @@ void ACloseRangeSystem::StartAttack()
         IAttackInterface* WeaponUser = Cast<IAttackInterface>(WeaponOwner);
         if (WeaponUser && !WeaponUser->GetIsAttacking() && WeaponIsActive)
         {
-
+			Weapon->CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
             WeaponUser->SetIsAttacking(true);
             WeaponUser->SetAttackIsCloseRange(true);
-            FTimerHandle InvincibilityDelay;
-            GetWorld()->GetTimerManager().SetTimer(InvincibilityDelay, this, &ACloseRangeSystem::AttackAnimDelay, 0.3f, false);
-            WeaponUser->SetIsAttacking(false);
+            FTimerHandle AttackDelay;
+            GetWorld()->GetTimerManager().SetTimer(AttackDelay, this, &ACloseRangeSystem::AttackAnimDelay, 1.0f, false);
         }
     }
 	else {
@@ -78,15 +79,20 @@ void ACloseRangeSystem::StartAttack()
 	}
 }
 
+void ACloseRangeSystem::AttackAnimDelay()
+{
+    IAttackInterface* WeaponUser = Cast<IAttackInterface>(WeaponOwner);
+    WeaponUser->SetIsAttacking(false);
+    Weapon->CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
 void ACloseRangeSystem::BeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
 {
     if (IsValid(OtherActor) && OtherActor != WeaponOwner)
     {
-        GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Overlap"));
+        UHealthComponent* HealthComponent = OtherActor->FindComponentByClass<UHealthComponent>();
+        if (IsValid(HealthComponent)) {
+            HealthComponent->TakeDamage(Weapon->Damage);
+        }
     }
-}
-
-void ACloseRangeSystem::EndOverlap(AActor* OverlappedActor, AActor* OtherActor)
-{
-    GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Overlap"));
 }

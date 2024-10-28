@@ -17,12 +17,12 @@ class EVOLUTIONARYJOURNEY_API ALongRangeSystem : public ABaseWeaponSystem
 	ALongRangeSystem();
 	
 
+	UPROPERTY(VisibleAnywhere)
+	class ABaseProjectile* SpawnedProjectile;
+
 public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class ABaseProjectile> ProjectileActor;
-
-	UPROPERTY(VisibleAnywhere)
-	class ABaseProjectile* SpawnedProjectile;
 
 	void BeginPlay() override;
 
@@ -30,6 +30,8 @@ public:
 
 	void StartAttack() override;
 
+	void SpawnProjectile();
 
-	virtual void OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit);
+	UFUNCTION()
+	void BeginOverlap(AActor* OverlappedActor, AActor* OtherActor);
 };

@@ -31,22 +31,3 @@ void ABaseWeaponSystem::StartAttack()
 {
 }
 
-void ABaseWeaponSystem::AttackAnimDelay()
-{
-    if (IsValid(WeaponOwner))
-    {
-        if (CustomAnimInstance == nullptr)
-        {
-            IAttackInterface* WeaponUser = Cast<IAttackInterface>(WeaponOwner);
-            CustomAnimInstance = WeaponUser->GetCustomAnimInstance();
-        }
-        else {
-            IAttackInterface* AnimInstance = Cast<IAttackInterface>(CustomAnimInstance);
-            if (AnimInstance)
-            {
-                AnimInstance->SetIsAttacking(true);
-            }
-        }
-    }
-}
-
