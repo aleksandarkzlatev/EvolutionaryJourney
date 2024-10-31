@@ -18,8 +18,14 @@ class EVOLUTIONARYJOURNEY_API ACloseRangeSystem : public ABaseWeaponSystem
 
 public:
 
-	UPROPERTY(EditAnywhere, Category = "CloseRangeSystem")
-	class ABaseCloseRangeWeapon* Weapon;
+	UPROPERTY(EditAnywhere)
+	int Damage;
+
+	UPROPERTY(EditAnywhere)
+	class UStaticMeshComponent* WeaponMesh;
+
+	UPROPERTY(EditAnywhere)
+	class UCapsuleComponent* CollisionComponent;
 
 	void BeginPlay() override;
 

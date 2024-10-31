@@ -5,14 +5,21 @@
 #include "GameFramework/Character.h"
 #include "EvolutionaryJourney/Animations/AnimationInterface/AttackInterface.h"
 #include "EvolutionaryJourney/Components/Health/HealthComponent.h"
-#include "EvolutionaryJourney/Weapons/BaseCloseRangeWeapon/BaseCloseRangeWeapon.h"
 #include "Components/CapsuleComponent.h"
 
 
 
 ACloseRangeSystem::ACloseRangeSystem()
 {
-    RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
+    CollisionComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("CollisionComponent"));
+    RootComponent = CollisionComponent;
+    CollisionComponent->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Ignore);
+
+    WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
+    WeaponMesh->SetupAttachment(CollisionComponent);
+    WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+    Damage = 1;
 }
 
 void ACloseRangeSystem::BeginPlay()
@@ -34,7 +41,9 @@ void ACloseRangeSystem::InitializeWeapon(AActor* InitOwner)
                 IAttackInterface* WeaponUser = Cast<IAttackInterface>(WeaponOwner);
                 if (WeaponUser)
                 {
-                    Weapon->OnActorBeginOverlap.AddDynamic(this, &ACloseRangeSystem::BeginOverlap);
+                    OnActorBeginOverlap.AddDynamic(this, &ACloseRangeSystem::BeginOverlap);
+                    CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
                     WeaponUser->SetIsAttacking(false);
                 }
                 else {
@@ -66,7 +75,7 @@ void ACloseRangeSystem::StartAttack()
         IAttackInterface* WeaponUser = Cast<IAttackInterface>(WeaponOwner);
         if (WeaponUser && !WeaponUser->GetIsAttacking() && WeaponIsActive)
         {
-			Weapon->CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+            if(IsValid(CollisionComponent)) CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
             WeaponUser->SetIsAttacking(true);
             WeaponUser->SetAttackIsCloseRange(true);
             FTimerHandle AttackDelay;
@@ -83,7 +92,7 @@ void ACloseRangeSystem::AttackAnimDelay()
 {
     IAttackInterface* WeaponUser = Cast<IAttackInterface>(WeaponOwner);
     WeaponUser->SetIsAttacking(false);
-    Weapon->CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    if (IsValid(CollisionComponent)) CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void ACloseRangeSystem::BeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
@@ -92,7 +101,7 @@ void ACloseRangeSystem::BeginOverlap(AActor* OverlappedActor, AActor* OtherActor
     {
         UHealthComponent* HealthComponent = OtherActor->FindComponentByClass<UHealthComponent>();
         if (IsValid(HealthComponent)) {
-            HealthComponent->TakeDamage(Weapon->Damage);
+            HealthComponent->TakeDamage(Damage);
         }
     }
 }

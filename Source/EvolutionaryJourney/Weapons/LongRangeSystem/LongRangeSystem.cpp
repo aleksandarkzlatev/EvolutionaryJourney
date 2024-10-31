@@ -6,17 +6,19 @@
 #include "EvolutionaryJourney/Animations/AnimationInterface/AttackInterface.h"
 #include "EvolutionaryJourney/Components/Health/HealthComponent.h"
 #include "EvolutionaryJourney/Weapons/BaseProjectile/BaseProjectile.h"
-#include "Components/ChildActorComponent.h"
 
 
 
 ALongRangeSystem::ALongRangeSystem()
 {
-    RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
+    WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
+    RootComponent = WeaponMesh;
+    WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void ALongRangeSystem::BeginPlay()
 {
+	Super::BeginPlay();
 }
 
 void ALongRangeSystem::InitializeWeapon(AActor* InitOwner)

@@ -21,10 +21,13 @@ class EVOLUTIONARYJOURNEY_API ALongRangeSystem : public ABaseWeaponSystem
 	class ABaseProjectile* SpawnedProjectile;
 
 public:
+	void BeginPlay() override;
+
+	UPROPERTY(EditAnywhere)
+	class UStaticMeshComponent* WeaponMesh;
+
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class ABaseProjectile> ProjectileActor;
-
-	void BeginPlay() override;
 
 	void InitializeWeapon(AActor* InitOwner);
 

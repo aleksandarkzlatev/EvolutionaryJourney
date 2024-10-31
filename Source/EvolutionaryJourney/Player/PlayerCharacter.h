@@ -99,10 +99,10 @@ protected:
 
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapons")
-	class ACloseRangeSystem* CloseRange;
+	class UChildActorComponent* CloseRangeSystem;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapons")
-	class ALongRangeSystem* LongRange;
+	class UChildActorComponent* LongRangeSystem;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapons")
 	class ABaseWeaponSystem* ActiveWeapon;
@@ -110,11 +110,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapons")
 	class UStaticMeshComponent* Quiver;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapons")
-	class UChildActorComponent* CloseRangeWeaponMesh;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapons")
-	class UChildActorComponent* LongRangeWeaponMesh;
 
 
 	void Move(const FInputActionValue& ActionValue);

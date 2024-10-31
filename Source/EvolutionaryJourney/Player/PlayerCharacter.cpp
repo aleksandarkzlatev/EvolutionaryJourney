@@ -13,8 +13,6 @@
 #include "EvolutionaryJourney/Components/InventorySystem/Inventory/InventoryComponent.h"
 #include "EvolutionaryJourney/Animations/PlayerCharacter/PlayerCharacterAnimations.h"
 #include "Components/ChildActorComponent.h"
-#include "EvolutionaryJourney/Weapons/BaseCloseRangeWeapon/BaseCloseRangeWeapon.h"
-#include "EvolutionaryJourney/Weapons/BaseLongRangeWeapon/BaseLongRangeWeapon.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -48,19 +46,19 @@ APlayerCharacter::APlayerCharacter()
 
 
 	
-	CloseRangeWeaponMesh = CreateDefaultSubobject<UChildActorComponent>(TEXT("Close Range Weapon Mesh"));
-	if (IsValid(CloseRangeWeaponMesh))
+	CloseRangeSystem = CreateDefaultSubobject<UChildActorComponent>(TEXT("Close Range Weapon Mesh"));
+	if (IsValid(CloseRangeSystem))
 	{
-		CloseRangeWeaponMesh->SetupAttachment(GetMesh(), TEXT("WeaponSocket"));
+		CloseRangeSystem->SetupAttachment(GetMesh(), TEXT("WeaponSocket"));
 	}
 	else {
 		UE_LOG(LogTemp, Error, TEXT("APlayerCharacter: CloseRangeWeaponComponent->WeaponMesh is not valid"));
 	}
 	
-	LongRangeWeaponMesh = CreateDefaultSubobject<UChildActorComponent>(TEXT("Long Range Weapon Mesh"));
-	if (IsValid(LongRangeWeaponMesh))
+	LongRangeSystem = CreateDefaultSubobject<UChildActorComponent>(TEXT("Long Range Weapon Mesh"));
+	if (IsValid(LongRangeSystem))
 	{
-		LongRangeWeaponMesh->SetupAttachment(GetMesh(), TEXT("BowSocket"));
+		LongRangeSystem->SetupAttachment(GetMesh(), TEXT("BowSocket"));
 	}
 	else {
 		UE_LOG(LogTemp, Error, TEXT("APlayerCharacter: LongRangeWeaponComponent->WeaponMesh is not valid"));
@@ -75,37 +73,25 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	CloseRange = GetWorld()->SpawnActor<ACloseRangeSystem>(ACloseRangeSystem::StaticClass());
-	CloseRange->AttachToActor(this, FAttachmentTransformRules::SnapToTargetIncludingScale);
-	CloseRange->WeaponIsActive = true;
-	ABaseCloseRangeWeapon* CloseRangeSystem = Cast<ABaseCloseRangeWeapon>(CloseRangeWeaponMesh->GetChildActor());
-	if (IsValid(CloseRangeSystem))
+	ACloseRangeSystem* CloseRangeWeapon = Cast<ACloseRangeSystem>(CloseRangeSystem->GetChildActor());
+	if (IsValid(CloseRangeWeapon))
 	{
-		CloseRange->Weapon = CloseRangeSystem;
+		CloseRangeWeapon->WeaponIsActive = true;
+		CloseRangeWeapon->InitializeWeapon(this);
 	}
-	else {
-		UE_LOG(LogTemp, Error, TEXT("APlayerCharacter: CloseRangeSystem is not valid"));
+	
+
+	ALongRangeSystem* LongRangeWeapon = Cast<ALongRangeSystem>(LongRangeSystem->GetChildActor());
+	if (IsValid(LongRangeWeapon))
+	{
+		LongRangeWeapon->WeaponIsActive = false;
+		LongRangeWeapon->InitializeWeapon(this);
 	}
-	CloseRange->InitializeWeapon(this);
 
 
-	LongRange = GetWorld()->SpawnActor<ALongRangeSystem>(ALongRangeSystem::StaticClass());
-	LongRange->AttachToActor(this, FAttachmentTransformRules::SnapToTargetIncludingScale);
-	LongRange->WeaponIsActive = false;
-    ABaseLongRangeWeapon* LongRangeSystem = Cast<ABaseLongRangeWeapon>(LongRangeWeaponMesh->GetChildActor());
-    if (IsValid(LongRangeSystem))
-    {
-        LongRange->ProjectileActor = LongRangeSystem->ProjectileActor;
-    }
-    else {
-        UE_LOG(LogTemp, Error, TEXT("APlayerCharacter: LongRangeSystem is not valid"));
-    }
-	LongRange->InitializeWeapon(this);
-
-
-	ActiveWeapon = CloseRange;
-	CloseRangeWeaponMesh->SetVisibility(true);
-	LongRangeWeaponMesh->SetVisibility(false);
+	ActiveWeapon = CloseRangeWeapon;
+	CloseRangeSystem->SetVisibility(true);
+	LongRangeSystem->SetVisibility(false);
 }
 
 // Called every frame
@@ -262,25 +248,29 @@ void APlayerCharacter::StartAttack()
 
 void APlayerCharacter::SwitchToCloseRangeWeapon()
 {
-	if (IsValid(CloseRange) && ActiveWeapon != CloseRange && !GetIsAttacking())
+	ACloseRangeSystem* CloseRangeWeapon = Cast<ACloseRangeSystem>(CloseRangeSystem->GetChildActor());
+	ALongRangeSystem* LongRangeWeapon = Cast<ALongRangeSystem>(LongRangeSystem->GetChildActor());
+	if (IsValid(CloseRangeWeapon) && ActiveWeapon != CloseRangeWeapon && !GetIsAttacking())
 	{
-		ActiveWeapon = CloseRange;
-		CloseRange->WeaponIsActive = true;
-		LongRange->WeaponIsActive = false;
-		CloseRangeWeaponMesh->SetVisibility(true);
-		LongRangeWeaponMesh->SetVisibility(false);
+		ActiveWeapon = CloseRangeWeapon;
+		CloseRangeWeapon->WeaponIsActive = true;
+		LongRangeWeapon->WeaponIsActive = false;
+		CloseRangeSystem->SetVisibility(true);
+		LongRangeSystem->SetVisibility(false);
 	}
 }
 
 void APlayerCharacter::SwitchToLongRangeWeapon()
 {
-	if (IsValid(LongRange) && ActiveWeapon != LongRange && !GetIsAttacking())
+	ACloseRangeSystem* CloseRangeWeapon = Cast<ACloseRangeSystem>(CloseRangeSystem->GetChildActor());
+	ALongRangeSystem* LongRangeWeapon = Cast<ALongRangeSystem>(LongRangeSystem->GetChildActor());
+	if (IsValid(LongRangeWeapon) && ActiveWeapon != LongRangeWeapon && !GetIsAttacking())
 	{
-		ActiveWeapon = LongRange;
-		CloseRange->WeaponIsActive = false;
-		LongRange->WeaponIsActive = true;
-		CloseRangeWeaponMesh->SetVisibility(false);
-		LongRangeWeaponMesh->SetVisibility(true);
+		ActiveWeapon = LongRangeWeapon;
+		CloseRangeWeapon->WeaponIsActive = false;
+		LongRangeWeapon->WeaponIsActive = true;
+		CloseRangeSystem->SetVisibility(false);
+		LongRangeSystem->SetVisibility(true);
 	}
 }
 

@@ -3,7 +3,7 @@
 
 #include "EvolutionaryJourney/Weapons/BaseWeaponSystem/BaseWeaponSystem.h"
 #include "EvolutionaryJourney/Animations/AnimationInterface/AttackInterface.h"
-#include "Components/ChildActorComponent.h"
+
 
 // Sets default values
 ABaseWeaponSystem::ABaseWeaponSystem()
