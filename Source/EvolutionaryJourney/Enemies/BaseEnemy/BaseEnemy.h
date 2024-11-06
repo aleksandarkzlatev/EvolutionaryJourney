@@ -4,10 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "EvolutionaryJourney/Animations/AnimationInterface/AttackInterface.h"
 #include "BaseEnemy.generated.h"
 
+
 UCLASS()
-class EVOLUTIONARYJOURNEY_API ABaseEnemy : public ACharacter
+class EVOLUTIONARYJOURNEY_API ABaseEnemy : public ACharacter, public IAttackInterface
 {
 	GENERATED_BODY()
 
@@ -23,15 +25,17 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+	UPROPERTY(EditAnywhere)
 	class UHealthComponent* HealthComponent;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
-	class UPawnSensingComponent* PawnSensingComponent;
+	UPROPERTY(EditAnywhere)
+	class UAIPerceptionComponent* PerceptionComponent;
 
-	UFUNCTION()
-	void OnSeePlayer(APawn* Pawn);
+
+	UAnimInstance* GetCustomAnimInstance() const;
+	UFUNCTION(BlueprintCallable)
+	void SetIsAttacking(bool bIsAttacking);
+	bool GetIsAttacking() const;
+	void SetAttackIsCloseRange(bool bIsCloseRange);
+	bool GetAttackIsCloseRange() const;
 };

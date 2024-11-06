@@ -2,49 +2,64 @@
 
 
 #include "EvolutionaryJourney/Enemies/BaseEnemy/BaseEnemy.h"
-#include "Perception/PawnSensingComponent.h"
 #include "EvolutionaryJourney/Components/Health/HealthComponent.h"
+#include "EvolutionaryJourney/Enemies/EnemyAiController/EnemyAiController.h"
+#include "Perception/AIPerceptionComponent.h"
 
-// Sets default values
 ABaseEnemy::ABaseEnemy()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+		// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	
+	AIControllerClass = AEnemyAiController::StaticClass();
+
+
+	PerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("PerceptionComponent"));
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
-
-	PawnSensingComponent = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingComponent"));
-
-	PawnSensingComponent->SightRadius = 1500.0f;
-	PawnSensingComponent->SetPeripheralVisionAngle(45.0f);
-	PawnSensingComponent->OnSeePawn.AddDynamic(this, &ABaseEnemy::OnSeePlayer);
 }
 
 // Called when the game starts or when spawned
 void ABaseEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	AEnemyAiController* EnemyAiController = Cast<AEnemyAiController>(GetController());
+	if (EnemyAiController && PerceptionComponent)
+	{
+		EnemyAiController->SetPerceptionComponent(*PerceptionComponent);
+	}
 }
 
 // Called every frame
 void ABaseEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-}
-
-// Called to bind functionality to input
-void ABaseEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-}
-
-void ABaseEnemy::OnSeePlayer(APawn* Pawn)
-{
-	if (IsValid(Pawn)) {
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("I see you!"));
+	AEnemyAiController* EnemyAiController = Cast<AEnemyAiController>(GetController());
+	if (EnemyAiController)
+	{
+		EnemyAiController->MoveToActor(GetWorld()->GetFirstPlayerController()->GetPawn());
 	}
 }
+
+UAnimInstance* ABaseEnemy::GetCustomAnimInstance() const
+{
+	return nullptr;
+}
+
+void ABaseEnemy::SetIsAttacking(bool bIsAttacking)
+{
+}
+
+bool ABaseEnemy::GetIsAttacking() const
+{
+	return false;
+}
+
+void ABaseEnemy::SetAttackIsCloseRange(bool bIsCloseRange)
+{
+}
+
+bool ABaseEnemy::GetAttackIsCloseRange() const
+{
+	return false;
+}
+
 
