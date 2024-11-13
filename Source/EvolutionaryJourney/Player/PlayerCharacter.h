@@ -111,6 +111,12 @@ protected:
 	class UStaticMeshComponent* Quiver;
 
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animations")
+	class UPlayerCharacterAnimations* AnimInstance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI")
+	class UAIPerceptionStimuliSourceComponent* PerceptionStimuliSource;
+
 
 	void Move(const FInputActionValue& ActionValue);
 	void Look(const FInputActionValue& ActionValue);

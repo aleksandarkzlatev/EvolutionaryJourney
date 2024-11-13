@@ -13,6 +13,8 @@
 #include "EvolutionaryJourney/Components/InventorySystem/Inventory/InventoryComponent.h"
 #include "EvolutionaryJourney/Animations/PlayerCharacter/PlayerCharacterAnimations.h"
 #include "Components/ChildActorComponent.h"
+#include "Perception//AIPerceptionStimuliSourceComponent.h"
+#include "Perception/AISense_Sight.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -44,8 +46,6 @@ APlayerCharacter::APlayerCharacter()
 	Quiver = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Quiver"));
 	Quiver->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale,TEXT("QuiverSocket"));
 
-
-	
 	CloseRangeSystem = CreateDefaultSubobject<UChildActorComponent>(TEXT("Close Range Weapon Mesh"));
 	if (IsValid(CloseRangeSystem))
 	{
@@ -64,9 +64,17 @@ APlayerCharacter::APlayerCharacter()
 		UE_LOG(LogTemp, Error, TEXT("APlayerCharacter: LongRangeWeaponComponent->WeaponMesh is not valid"));
 	}
 
+
+	PerceptionStimuliSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Perception Stimuli Source"));
+	if (IsValid(PerceptionStimuliSource)) {
+		PerceptionStimuliSource->RegisterForSense(UAISense_Sight::StaticClass());
+		PerceptionStimuliSource->bAutoRegister = true;
+	}
+	
+
 	MaxWalkSpeed = 500;
 	MaxSprintSpeed = 800;
-
+	GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
 }
 
 // Called when the game starts or when spawned
@@ -92,6 +100,8 @@ void APlayerCharacter::BeginPlay()
 	ActiveWeapon = CloseRangeWeapon;
 	CloseRangeSystem->SetVisibility(true);
 	LongRangeSystem->SetVisibility(false);
+
+	AnimInstance = Cast<UPlayerCharacterAnimations>(GetCustomAnimInstance());
 }
 
 // Called every frame
@@ -240,7 +250,6 @@ void APlayerCharacter::StartAttack()
 	if (IsValid(ActiveWeapon)) {
 		ActiveWeapon->StartAttack();
 	}
-
 	else {
 		UE_LOG(LogTemp, Error, TEXT("APlayerCharacter: ActiveWeapon is not valid"));
 	}
@@ -281,7 +290,6 @@ UAnimInstance* APlayerCharacter::GetCustomAnimInstance() const
 
 void APlayerCharacter::SetIsAttacking(bool bIsAttacking)
 {
-	UPlayerCharacterAnimations* AnimInstance = Cast<UPlayerCharacterAnimations>(GetCustomAnimInstance());
 	if (IsValid(AnimInstance))
 	{
 		AnimInstance->SetIsAttacking(bIsAttacking);
@@ -290,7 +298,6 @@ void APlayerCharacter::SetIsAttacking(bool bIsAttacking)
 
 bool APlayerCharacter::GetIsAttacking() const
 {
-	UPlayerCharacterAnimations* AnimInstance = Cast<UPlayerCharacterAnimations>(GetCustomAnimInstance());
 	if (IsValid(AnimInstance))
 	{
 		return AnimInstance->GetIsAttacking();
@@ -300,7 +307,6 @@ bool APlayerCharacter::GetIsAttacking() const
 
 void APlayerCharacter::SetAttackIsCloseRange(bool bIsCloseRange)
 {
-	UPlayerCharacterAnimations* AnimInstance = Cast<UPlayerCharacterAnimations>(GetCustomAnimInstance());
 	if (IsValid(AnimInstance))
 	{
 		AnimInstance->SetAttackIsCloseRange(bIsCloseRange);
@@ -309,7 +315,6 @@ void APlayerCharacter::SetAttackIsCloseRange(bool bIsCloseRange)
 
 bool APlayerCharacter::GetAttackIsCloseRange() const
 {
-	UPlayerCharacterAnimations* AnimInstance = Cast<UPlayerCharacterAnimations>(GetCustomAnimInstance());
 	if (IsValid(AnimInstance))
 	{
 		return AnimInstance->GetAttackIsCloseRange();

@@ -67,7 +67,7 @@ void ALongRangeSystem::StartAttack()
             WeaponUser->SetIsAttacking(true);
             WeaponUser->SetAttackIsCloseRange(false);
             FTimerHandle AttackDelay;
-            GetWorld()->GetTimerManager().SetTimer(AttackDelay, this, &ALongRangeSystem::SpawnProjectile, 3.3f, false);
+            GetWorld()->GetTimerManager().SetTimer(AttackDelay, this, &ALongRangeSystem::SpawnProjectile, 3.4f, false);
 
         }
         else {

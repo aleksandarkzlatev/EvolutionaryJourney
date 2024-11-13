@@ -31,6 +31,18 @@ public:
 	UPROPERTY(EditAnywhere)
 	class UAIPerceptionComponent* PerceptionComponent;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapons")
+	class UChildActorComponent* CloseRangeSystem;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapons")
+	class UChildActorComponent* LongRangeSystem;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapons")
+	class ABaseWeaponSystem* ChosenWeapon;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animations")
+	class UPlayerCharacterAnimations* AnimInstance;
+
 
 	UAnimInstance* GetCustomAnimInstance() const;
 	UFUNCTION(BlueprintCallable)
@@ -38,4 +50,6 @@ public:
 	bool GetIsAttacking() const;
 	void SetAttackIsCloseRange(bool bIsCloseRange);
 	bool GetAttackIsCloseRange() const;
+
+	void StartAttack();
 };
