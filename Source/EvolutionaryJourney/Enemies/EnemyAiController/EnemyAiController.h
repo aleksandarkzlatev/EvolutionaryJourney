@@ -17,6 +17,15 @@ class EVOLUTIONARYJOURNEY_API AEnemyAiController : public AAIController
 	AEnemyAiController();
 
 public:
+	UPROPERTY(VisibleAnywhere)
+	bool bIsPlayerDetected;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
+	bool bIsPlayerInSight = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
+	class APlayerCharacter* DetectedPlayer = nullptr;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
 	class UAISenseConfig_Sight* SightConfig;
 
@@ -27,9 +36,8 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(VisibleAnywhere)
-	bool bIsPlayerDetected;
-
 	UFUNCTION()
 	void OntargetDetected(AActor* Actor, FAIStimulus Stimulus);
+
+	void AimAtTarget(AActor* Target);
 };

@@ -46,22 +46,26 @@ void ACloseRangeSystem::InitializeWeapon(AActor* InitOwner)
 
                     WeaponUser->SetIsAttacking(false);
                 }
-                else {
+                else 
+                {
                     UE_LOG(LogTemp, Error, TEXT("UCloseRangeWeaponComponent: WeaponUser is not valid"));
                     return;
                 }
             }
-            else {
+            else 
+            {
                 UE_LOG(LogTemp, Error, TEXT("UCloseRangeWeaponComponent: MeshComp is not valid"));
                 return;
             }
         }
-        else {
+        else 
+        {
             UE_LOG(LogTemp, Error, TEXT("UCloseRangeWeaponComponent: Character is not valid"));
             return;
         }
     }
-    else {
+    else 
+    {
         UE_LOG(LogTemp, Error, TEXT("UCloseRangeWeaponComponent: Owner is not valid"));
         return;
     }
@@ -75,24 +79,25 @@ void ACloseRangeSystem::StartAttack()
         IAttackInterface* WeaponUser = Cast<IAttackInterface>(WeaponOwner);
         if (WeaponUser && !WeaponUser->GetIsAttacking() && WeaponIsActive)
         {
-            if(IsValid(CollisionComponent)) CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
             WeaponUser->SetIsAttacking(true);
             WeaponUser->SetAttackIsCloseRange(true);
-            FTimerHandle AttackDelay;
-            GetWorld()->GetTimerManager().SetTimer(AttackDelay, this, &ACloseRangeSystem::AttackAnimDelay, 1.0f, false);
         }
     }
-	else {
+	else 
+    {
 		UE_LOG(LogTemp, Error, TEXT("UCloseRangeWeaponComponent: Owner is not valid"));
 		return;
 	}
 }
 
-void ACloseRangeSystem::AttackAnimDelay()
+void ACloseRangeSystem::TurnCollisionOn()
 {
-    IAttackInterface* WeaponUser = Cast<IAttackInterface>(WeaponOwner);
-    WeaponUser->SetIsAttacking(false);
-    if (IsValid(CollisionComponent)) CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    if (IsValid(CollisionComponent)) CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+}
+
+void ACloseRangeSystem::TurnCollisionOff()
+{
+	if (IsValid(CollisionComponent)) CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void ACloseRangeSystem::BeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
@@ -100,7 +105,8 @@ void ACloseRangeSystem::BeginOverlap(AActor* OverlappedActor, AActor* OtherActor
     if (IsValid(OtherActor) && OtherActor != WeaponOwner)
     {
         UHealthComponent* HealthComponent = OtherActor->FindComponentByClass<UHealthComponent>();
-        if (IsValid(HealthComponent)) {
+        if (IsValid(HealthComponent)) 
+        {
             HealthComponent->TakeDamage(Damage);
         }
     }

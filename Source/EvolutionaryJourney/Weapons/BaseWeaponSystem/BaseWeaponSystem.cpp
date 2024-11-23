@@ -31,3 +31,8 @@ void ABaseWeaponSystem::StartAttack()
 {
 }
 
+void ABaseWeaponSystem::EndAttack()
+{
+	IAttackInterface* WeaponUser = Cast<IAttackInterface>(WeaponOwner);
+	WeaponUser->SetIsAttacking(false);
+}

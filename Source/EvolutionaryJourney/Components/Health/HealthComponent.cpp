@@ -27,7 +27,8 @@ void UHealthComponent::BeginPlay()
 
 void UHealthComponent::TakeDamage(int Damage)
 {
-	if (bCanTakeDamage) {
+	if (bCanTakeDamage) 
+	{
 		Health -= Damage;
 		bCanTakeDamage = false;
 	}
@@ -35,7 +36,8 @@ void UHealthComponent::TakeDamage(int Damage)
 	FTimerHandle InvincibilityDelay;
 	GetWorld()->GetTimerManager().SetTimer(InvincibilityDelay, this, &UHealthComponent::AllowedToTakeDamage, 0.5f, false);
 
-	if (Health <= 0) {
+	if (Health <= 0) 
+	{
 		Die();
 	}
 }

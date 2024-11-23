@@ -24,12 +24,15 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	
+	UPROPERTY(EditAnywhere, Category = "AI")
+	float AttackRange = 100.0f;
 
 	UPROPERTY(EditAnywhere)
 	class UHealthComponent* HealthComponent;
 
-	UPROPERTY(EditAnywhere)
-	class UAIPerceptionComponent* PerceptionComponent;
+	UPROPERTY(VisibleAnywhere)
+	class AEnemyAiController* AiController;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapons")
 	class UChildActorComponent* CloseRangeSystem;
@@ -38,7 +41,7 @@ public:
 	class UChildActorComponent* LongRangeSystem;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapons")
-	class ABaseWeaponSystem* ChosenWeapon;
+	class ABaseWeaponSystem* ActiveWeapon;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animations")
 	class UPlayerCharacterAnimations* AnimInstance;

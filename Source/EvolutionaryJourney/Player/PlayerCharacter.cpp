@@ -44,14 +44,15 @@ APlayerCharacter::APlayerCharacter()
 	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory"));
 
 	Quiver = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Quiver"));
-	Quiver->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale,TEXT("QuiverSocket"));
+	Quiver->SetupAttachment(GetMesh(), TEXT("QuiverSocket"));
 
 	CloseRangeSystem = CreateDefaultSubobject<UChildActorComponent>(TEXT("Close Range Weapon Mesh"));
 	if (IsValid(CloseRangeSystem))
 	{
 		CloseRangeSystem->SetupAttachment(GetMesh(), TEXT("WeaponSocket"));
 	}
-	else {
+	else 
+	{
 		UE_LOG(LogTemp, Error, TEXT("APlayerCharacter: CloseRangeWeaponComponent->WeaponMesh is not valid"));
 	}
 	
@@ -60,17 +61,12 @@ APlayerCharacter::APlayerCharacter()
 	{
 		LongRangeSystem->SetupAttachment(GetMesh(), TEXT("BowSocket"));
 	}
-	else {
+	else 
+	{
 		UE_LOG(LogTemp, Error, TEXT("APlayerCharacter: LongRangeWeaponComponent->WeaponMesh is not valid"));
-	}
-
+	}	
 
 	PerceptionStimuliSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Perception Stimuli Source"));
-	if (IsValid(PerceptionStimuliSource)) {
-		PerceptionStimuliSource->RegisterForSense(UAISense_Sight::StaticClass());
-		PerceptionStimuliSource->bAutoRegister = true;
-	}
-	
 
 	MaxWalkSpeed = 500;
 	MaxSprintSpeed = 800;
@@ -101,6 +97,12 @@ void APlayerCharacter::BeginPlay()
 	CloseRangeSystem->SetVisibility(true);
 	LongRangeSystem->SetVisibility(false);
 
+	if (IsValid(PerceptionStimuliSource))
+	{
+		PerceptionStimuliSource->RegisterForSense(UAISense_Sight::StaticClass());
+		PerceptionStimuliSource->bAutoRegister = true;
+	}
+
 	AnimInstance = Cast<UPlayerCharacterAnimations>(GetCustomAnimInstance());
 }
 
@@ -117,13 +119,16 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	if (APlayerController* PlayerController = Cast < APlayerController>(Controller)) {
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer())) {
+	if (APlayerController* PlayerController = Cast < APlayerController>(Controller)) 
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer())) 
+		{
 			Subsystem->AddMappingContext(InputMapping, 0);
 		}
 	}
 
-	if (UEnhancedInputComponent* Input = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) {
+	if (UEnhancedInputComponent* Input = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) 
+	{
 		Input->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Move);
 		Input->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Look);
 		Input->BindAction(JumpActiom, ETriggerEvent::Triggered, this, &APlayerCharacter::Jump);
@@ -142,8 +147,8 @@ void APlayerCharacter::Move(const FInputActionValue& InputNumber)
 {
 	FVector2D InputVector = InputNumber.Get<FVector2D>();
 
-	if (IsValid(Controller)) {
-
+	if (IsValid(Controller)) 
+	{
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 		const FRotationMatrix RotationMatrix(YawRotation);
@@ -162,7 +167,8 @@ void APlayerCharacter::Look(const FInputActionValue& InputNumber)
 {
 	FVector2D InputVector = InputNumber.Get<FVector2D>();
 
-	if (IsValid(Controller)) {
+	if (IsValid(Controller)) 
+	{
 		AddControllerYawInput(InputVector.X);
 		AddControllerPitchInput(InputVector.Y);
 	}
@@ -175,15 +181,15 @@ void APlayerCharacter::Jump()
 
 void APlayerCharacter::SwitchCamera()
 {
-	if (!bCanSwitchCamera) {
-		return;
-	}
+	if (!bCanSwitchCamera) return;
 
-	if (bIsFirstPerson) {
+	if (bIsFirstPerson) 
+	{
 		FirstPersonCamera->SetActive(true);
 		ThirdPersonCamera->SetActive(false);
 	}
-	else {
+	else 
+	{
 		FirstPersonCamera->SetActive(false);
 		ThirdPersonCamera->SetActive(true);
 	}
@@ -203,14 +209,17 @@ void APlayerCharacter::ResetCameraSwitch()
 
 void APlayerCharacter::StartSprint()
 {
-	if (bHasStamina) {
+	if (bHasStamina) 
+	{
 		GetCharacterMovement()->MaxWalkSpeed = MaxSprintSpeed;
 
 		// In the case of the sprint button being held while the player is not moving
-		if (GetVelocity().Size() >= 0.5) {
+		if (GetVelocity().Size() >= 0.5) 
+		{
 			bIsSprinting = true;
 		}
-		else {
+		else 
+		{
 			bIsSprinting = false;
 		}
 	}
@@ -225,32 +234,39 @@ void APlayerCharacter::EndSprint()
 
 void APlayerCharacter::UpdateStamina()
 {
-	if (bIsSprinting) {
+	if (bIsSprinting) 
+	{
 		CurrStamina -= StaminaDrainTime;
 		CurrentRefillDelayTime = StaminaDelayBeforeRefill;
 	}
-	else if (!bIsSprinting && CurrStamina < MaxStamina) {
+	else if (!bIsSprinting && CurrStamina < MaxStamina) 
+	{
 		CurrentRefillDelayTime--;
-		if (CurrentRefillDelayTime <= 0) {
+		if (CurrentRefillDelayTime <= 0) 
+		{
 			CurrStamina += StaminaRefillTime;
 		}
 	}
 
-	if (CurrStamina <= 0) {
+	if (CurrStamina <= 0) 
+	{
 		bHasStamina = false;
 		EndSprint();
 	}
-	else {
+	else 
+	{
 		bHasStamina = true;
 	}
 }
 
 void APlayerCharacter::StartAttack()
 {
-	if (IsValid(ActiveWeapon)) {
+	if (IsValid(ActiveWeapon) && !GetIsAttacking()) 
+	{
 		ActiveWeapon->StartAttack();
 	}
-	else {
+	else 
+	{
 		UE_LOG(LogTemp, Error, TEXT("APlayerCharacter: ActiveWeapon is not valid"));
 	}
 }

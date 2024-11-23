@@ -37,22 +37,26 @@ void ALongRangeSystem::InitializeWeapon(AActor* InitOwner)
                 {
                     WeaponUser->SetIsAttacking(false);
                 }
-                else {
+                else 
+                {
                     UE_LOG(LogTemp, Error, TEXT("ULongRangeWeaponComponent: WeaponUser is not valid"));
                     return;
                 }
             }
-            else {
+            else 
+            {
                 UE_LOG(LogTemp, Error, TEXT("ULongRangeWeaponComponent: MeshComp is not valid"));
                 return;
             }
         }
-        else {
+        else 
+        {
             UE_LOG(LogTemp, Error, TEXT("ULongRangeWeaponComponent: Character is not valid"));
             return;
         }
     }
-    else {
+    else 
+    {
         UE_LOG(LogTemp, Error, TEXT("ULongRangeWeaponComponent: Owner is not valid"));
         return;
     }
@@ -60,26 +64,24 @@ void ALongRangeSystem::InitializeWeapon(AActor* InitOwner)
 
 void ALongRangeSystem::StartAttack()
 {
-    IAttackInterface* WeaponUser = Cast<IAttackInterface>(WeaponOwner);
-    if (IsValid(WeaponOwner) && WeaponIsActive && !WeaponUser->GetIsAttacking()) {
-        if (WeaponUser)
+    if (IsValid(WeaponOwner))
+    {
+        IAttackInterface* WeaponUser = Cast<IAttackInterface>(WeaponOwner);
+        if (WeaponUser && !WeaponUser->GetIsAttacking() && WeaponIsActive)
         {
             WeaponUser->SetIsAttacking(true);
             WeaponUser->SetAttackIsCloseRange(false);
-            FTimerHandle AttackDelay;
-            GetWorld()->GetTimerManager().SetTimer(AttackDelay, this, &ALongRangeSystem::SpawnProjectile, 3.4f, false);
-
         }
-        else {
-            UE_LOG(LogTemp, Error, TEXT("ULongRangeWeaponComponent: WeaponUser is not valid"));
-            return;
-        }
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("UCloseRangeWeaponComponent: Owner is not valid"));
+        return;
     }
 }
 
 void ALongRangeSystem::SpawnProjectile()
 {
-    IAttackInterface* WeaponUser = Cast<IAttackInterface>(WeaponOwner);
     FVector OwnerLocation = WeaponOwner->GetActorLocation();
     FRotator OwnerRotation = WeaponOwner->GetActorRotation();
 
@@ -90,7 +92,6 @@ void ALongRangeSystem::SpawnProjectile()
 
     SpawnedProjectile = GetWorld()->SpawnActor<ABaseProjectile>(ProjectileActor, SpawnLocation, OwnerRotation);
     SpawnedProjectile->OnActorBeginOverlap.AddDynamic(this, &ALongRangeSystem::BeginOverlap);
-    WeaponUser->SetIsAttacking(false);
 }
 
 void ALongRangeSystem::BeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
@@ -98,7 +99,8 @@ void ALongRangeSystem::BeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
     if (IsValid(OtherActor) && OtherActor != WeaponOwner)
     {
         UHealthComponent* HealthComponent = OtherActor->FindComponentByClass<UHealthComponent>();
-        if (IsValid(HealthComponent)) {
+        if (IsValid(HealthComponent)) 
+        {
             HealthComponent->TakeDamage(SpawnedProjectile->Damage);
         }
         SpawnedProjectile->Destroy();

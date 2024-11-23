@@ -24,7 +24,7 @@ public:
 	UPROPERTY(EditAnywhere)
 	class UStaticMeshComponent* WeaponMesh;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UCapsuleComponent* CollisionComponent;
 
 	void BeginPlay() override;
@@ -33,7 +33,11 @@ public:
 
 	void StartAttack() override;
 
-	void AttackAnimDelay();
+	UFUNCTION(BlueprintCallable)
+	void TurnCollisionOn();
+
+	UFUNCTION(BlueprintCallable)
+	void TurnCollisionOff();
 
 	UFUNCTION()
 	void BeginOverlap(AActor* OverlappedActor, AActor* OtherActor);

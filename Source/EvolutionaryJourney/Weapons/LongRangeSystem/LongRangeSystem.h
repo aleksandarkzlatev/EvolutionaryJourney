@@ -33,6 +33,7 @@ public:
 
 	void StartAttack() override;
 
+	UFUNCTION(BlueprintCallable)
 	void SpawnProjectile();
 
 	UFUNCTION()

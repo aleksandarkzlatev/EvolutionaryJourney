@@ -53,16 +53,37 @@ void AEnemyAiController::OntargetDetected(AActor* Actor, FAIStimulus Stimulus)
 		if (Stimulus.WasSuccessfullySensed())
 		{
 			bIsPlayerDetected = true;
+			bIsPlayerInSight = true;
+			DetectedPlayer = Cast<APlayerCharacter>(Actor);
+
 			ABaseEnemy* Enemy = Cast<ABaseEnemy>(AIOwner);
 			ALongRangeSystem* LongRangeWeapon = Cast<ALongRangeSystem>(Enemy->LongRangeSystem->GetChildActor());
-			if (Enemy->ChosenWeapon != LongRangeWeapon) {
+			if (Enemy->ActiveWeapon != LongRangeWeapon) {
 				MoveToActor(Actor);
 			}
-			else
-			{
-				StopMovement();
-			}
+		}
+		else 
+		{
+			bIsPlayerDetected = false;
+			bIsPlayerInSight = false;
+			DetectedPlayer = nullptr;
+			StopMovement();
 		}
     }
-
 }
+
+void AEnemyAiController::AimAtTarget(AActor* Target)
+{
+	if (!Target) return;
+
+	APawn* ControlledPawn = GetPawn();
+	if (!ControlledPawn) return;
+
+	FVector EnemyLocation = ControlledPawn->GetActorLocation();
+	FVector TargetLocation = Target->GetActorLocation();
+
+	FRotator LookAtRotation = (TargetLocation - EnemyLocation).Rotation();
+	ControlledPawn->SetActorRotation(FRotator(ControlledPawn->GetActorRotation().Pitch, LookAtRotation.Yaw, ControlledPawn->GetActorRotation().Roll));
+}
+
+

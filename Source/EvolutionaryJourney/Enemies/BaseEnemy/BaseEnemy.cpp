@@ -25,8 +25,9 @@ ABaseEnemy::ABaseEnemy()
 	{
 		CloseRangeSystem->SetupAttachment(GetMesh(), TEXT("WeaponSocket"));
 	}
-	else {
-		UE_LOG(LogTemp, Error, TEXT("APlayerCharacter: CloseRangeWeaponComponent->WeaponMesh is not valid"));
+	else 
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABaseEnemy: CloseRangeWeaponComponent->WeaponMesh is not valid"));
 	}
 
 	LongRangeSystem = CreateDefaultSubobject<UChildActorComponent>(TEXT("LongRangeSystem"));
@@ -34,8 +35,9 @@ ABaseEnemy::ABaseEnemy()
 	{
 		LongRangeSystem->SetupAttachment(GetMesh(), TEXT("BowSocket"));
 	}
-	else {
-		UE_LOG(LogTemp, Error, TEXT("APlayerCharacter: LongRangeWeaponComponent->WeaponMesh is not valid"));
+	else 
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABaseEnemy: LongRangeWeaponComponent->WeaponMesh is not valid"));
 	}
 
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
@@ -45,6 +47,9 @@ ABaseEnemy::ABaseEnemy()
 void ABaseEnemy::BeginPlay()
 {
 	Super::BeginPlay();
+
+	AiController = Cast<AEnemyAiController>(GetController());
+
 
 	ACloseRangeSystem* CloseRangeWeapon = Cast<ACloseRangeSystem>(CloseRangeSystem->GetChildActor());
 	if (IsValid(CloseRangeWeapon))
@@ -58,26 +63,25 @@ void ABaseEnemy::BeginPlay()
 		LongRangeWeapon->InitializeWeapon(this);
 	}
 	
-	if (CloseRangeSystem->IsVisible())
+	if (IsValid(CloseRangeWeapon) && CloseRangeSystem->IsVisible())
 	{
-		ChosenWeapon = CloseRangeWeapon;
+		ActiveWeapon = CloseRangeWeapon;
 		CloseRangeWeapon->WeaponIsActive = true;
 		LongRangeWeapon->WeaponIsActive = false;
 		CloseRangeWeapon->SetActorHiddenInGame(false);
 		LongRangeWeapon->SetActorHiddenInGame(true);
-		UE_LOG(LogTemp, Warning, TEXT("APlayerCharacter: ChosenWeapon is CloseRangeWeapon"));
 	}
-	else if (LongRangeSystem->IsVisible())
+	else if (IsValid(LongRangeWeapon) && LongRangeSystem->IsVisible())
 	{
-		ChosenWeapon = LongRangeWeapon;
+		ActiveWeapon = LongRangeWeapon;
 		CloseRangeWeapon->WeaponIsActive = false;
 		LongRangeWeapon->WeaponIsActive = true;
 		CloseRangeWeapon->SetActorHiddenInGame(true);
 		LongRangeWeapon->SetActorHiddenInGame(false);
-		UE_LOG(LogTemp, Warning, TEXT("APlayerCharacter: ChosenWeapon is LongRangeWeapon"));
 	}
-	else {
-		UE_LOG(LogTemp, Error, TEXT("APlayerCharacter: ChosenWeapon is not valid"));
+	else 
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABaseEnemy: ChosenWeapon is not valid"));
 	}
 
 	AnimInstance = Cast<UPlayerCharacterAnimations>(GetCustomAnimInstance());
@@ -88,32 +92,33 @@ void ABaseEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	if (!PlayerCharacter) return;
-
-	float DistanceToPlayer = FVector::Dist(PlayerCharacter->GetActorLocation(), GetActorLocation());
-
-	const float AttackRange = 100.0f;
-
-	AEnemyAiController* AiController = Cast<AEnemyAiController>(GetController());
-	if (ChosenWeapon == CloseRangeSystem->GetChildActor())
+	if (IsValid(AiController))
 	{
-		if (DistanceToPlayer <= AttackRange && AiController->bIsPlayerDetected)
-		{
-			StartAttack();
-			AiController->StopMovement();
-			AiController->bIsPlayerDetected = false;
+		APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(AiController->DetectedPlayer);
+		if (IsValid(PlayerCharacter)) {
+			float DistanceToPlayer = FVector::Dist(PlayerCharacter->GetActorLocation(), GetActorLocation());
+
+			if (ActiveWeapon == CloseRangeSystem->GetChildActor())
+			{
+				if (DistanceToPlayer <= AttackRange && AiController->bIsPlayerDetected)
+				{
+					StartAttack();
+					AiController->StopMovement();
+				}
+				else if(!GetIsAttacking()){
+					AiController->MoveToActor(PlayerCharacter);
+				}
+			}
+			else if (ActiveWeapon == LongRangeSystem->GetChildActor())
+			{
+				if (AiController->bIsPlayerDetected && !GetIsAttacking())
+				{
+					AiController->AimAtTarget(PlayerCharacter);
+					StartAttack();
+				}
+			}
 		}
 	}
-	else if (ChosenWeapon == LongRangeSystem->GetChildActor())
-	{
-		if (AiController->bIsPlayerDetected) 
-		{
-			StartAttack();
-			AiController->bIsPlayerDetected = false;
-		}
-	}
-	
 }
 
 UAnimInstance* ABaseEnemy::GetCustomAnimInstance() const
@@ -157,9 +162,9 @@ bool ABaseEnemy::GetAttackIsCloseRange() const
 
 void ABaseEnemy::StartAttack()
 {
-	if (IsValid(ChosenWeapon))
+	if (IsValid(ActiveWeapon) && !GetIsAttacking())
 	{
-		ChosenWeapon->StartAttack();
+		ActiveWeapon->StartAttack();
 	}
 }
 
