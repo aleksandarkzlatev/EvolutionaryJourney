@@ -48,6 +48,14 @@ protected:
 
 	float CurrentRefillDelayTime;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Expirience")
+	int Level;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Expirience")
+	float CurrentEXP;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Expirience")
+	float EXPToLevelUp;
 
 	// Basic component needed for the player vision
 	UPROPERTY(EditAnywhere)
@@ -138,6 +146,7 @@ protected:
 	bool GetIsAttacking() const;
 	void SetAttackIsCloseRange(bool bIsCloseRange);
 	bool GetAttackIsCloseRange() const;
+	void IncreaseLevel();
 
 	
 public:	
@@ -146,5 +155,7 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	void IncreaseEXP(float IncreaseBy);
 
 };

@@ -26,7 +26,10 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	
 	UPROPERTY(EditAnywhere, Category = "AI")
-	float AttackRange = 100.0f;
+	float AttackRange;
+
+	UPROPERTY(EditAnywhere, Category = "Experience")
+	float DroppedEXP;
 
 	UPROPERTY(EditAnywhere)
 	class UHealthComponent* HealthComponent;

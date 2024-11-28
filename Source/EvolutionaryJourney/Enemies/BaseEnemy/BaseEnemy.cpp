@@ -41,6 +41,8 @@ ABaseEnemy::ABaseEnemy()
 	}
 
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+	AttackRange = 100.0f;
+	DroppedEXP = 4.0f;
 }
 
 // Called when the game starts or when spawned

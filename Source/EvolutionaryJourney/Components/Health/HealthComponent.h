@@ -34,7 +34,7 @@ protected:
 
 public:
 
-	void TakeDamage(int Damage);
+	void TakeDamage(AActor* DealtBy, int Damage);
 
 	float GetHealth();
 	void RecoverHealth(float addedHealth);

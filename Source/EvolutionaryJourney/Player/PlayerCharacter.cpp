@@ -71,6 +71,9 @@ APlayerCharacter::APlayerCharacter()
 	MaxWalkSpeed = 500;
 	MaxSprintSpeed = 800;
 	GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
+	Level = 0;
+	CurrentEXP = 0;
+	EXPToLevelUp = 10.0;
 }
 
 // Called when the game starts or when spawned
@@ -336,4 +339,21 @@ bool APlayerCharacter::GetAttackIsCloseRange() const
 		return AnimInstance->GetAttackIsCloseRange();
 	}
 	return false;
+}
+
+void APlayerCharacter::IncreaseEXP(float IncreaseBy)
+{
+	CurrentEXP += IncreaseBy;
+	UE_LOG(LogTemp, Warning, TEXT("Current EXP: %f"), CurrentEXP);
+	if (CurrentEXP >= EXPToLevelUp)
+	{
+		IncreaseLevel();
+		CurrentEXP -= EXPToLevelUp;
+		EXPToLevelUp *= 1.25;
+	}
+}
+
+void APlayerCharacter::IncreaseLevel()
+{
+	Level++;
 }

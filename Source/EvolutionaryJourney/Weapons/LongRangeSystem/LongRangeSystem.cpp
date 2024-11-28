@@ -101,7 +101,7 @@ void ALongRangeSystem::BeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
         UHealthComponent* HealthComponent = OtherActor->FindComponentByClass<UHealthComponent>();
         if (IsValid(HealthComponent)) 
         {
-            HealthComponent->TakeDamage(SpawnedProjectile->Damage);
+            HealthComponent->TakeDamage(WeaponOwner, SpawnedProjectile->Damage);
         }
         SpawnedProjectile->Destroy();
     }

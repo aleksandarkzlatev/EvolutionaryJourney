@@ -2,6 +2,8 @@
 
 
 #include "EvolutionaryJourney/Components/Health/HealthComponent.h"
+#include "EvolutionaryJourney/Player/PlayerCharacter.h"
+#include "EvolutionaryJourney/Enemies/BaseEnemy/BaseEnemy.h"
 
 // Sets default values for this component's properties
 UHealthComponent::UHealthComponent()
@@ -25,7 +27,7 @@ void UHealthComponent::BeginPlay()
 
 }
 
-void UHealthComponent::TakeDamage(int Damage)
+void UHealthComponent::TakeDamage(AActor* DealtBy, int Damage)
 {
 	if (bCanTakeDamage) 
 	{
@@ -38,6 +40,15 @@ void UHealthComponent::TakeDamage(int Damage)
 
 	if (Health <= 0) 
 	{
+		if (IsValid(DealtBy) && DealtBy->IsA(APlayerCharacter::StaticClass())) 
+		{
+			APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(DealtBy);
+			ABaseEnemy* Enemy = Cast<ABaseEnemy>(GetOwner());
+			if (IsValid(PlayerCharacter) && IsValid(Enemy))
+			{
+				PlayerCharacter->IncreaseEXP(Enemy->DroppedEXP);
+			}
+		}
 		Die();
 	}
 }

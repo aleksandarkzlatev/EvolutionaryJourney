@@ -105,9 +105,9 @@ void ACloseRangeSystem::BeginOverlap(AActor* OverlappedActor, AActor* OtherActor
     if (IsValid(OtherActor) && OtherActor != WeaponOwner)
     {
         UHealthComponent* HealthComponent = OtherActor->FindComponentByClass<UHealthComponent>();
-        if (IsValid(HealthComponent)) 
-        {
-            HealthComponent->TakeDamage(Damage);
+        if (IsValid(HealthComponent))
+        { 
+            HealthComponent->TakeDamage(WeaponOwner, Damage);
         }
     }
 }
