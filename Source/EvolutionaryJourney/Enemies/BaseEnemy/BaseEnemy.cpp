@@ -12,6 +12,8 @@
 #include "EvolutionaryJourney/Weapons/LongRangeSystem/LongRangeSystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "EvolutionaryJourney/Player/PlayerCharacter.h"
+#include "Components/WidgetComponent.h"
+#include "EvolutionaryJourney/UI/Enemy/HealthBar/EnemyHealthBar.h"
 
 
 ABaseEnemy::ABaseEnemy()
@@ -41,6 +43,13 @@ ABaseEnemy::ABaseEnemy()
 	}
 
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+
+	HealthBarWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthBarWidgetComponent"));
+	HealthBarWidgetComponent->SetupAttachment(RootComponent);
+	HealthBarWidgetComponent->SetRelativeLocation(FVector(0.0f, 0.0f, 100.0f));
+	HealthBarWidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
+	HealthBarWidgetComponent->SetDrawSize(FVector2D(200.0f, 50.0f));
+
 	AttackRange = 100.0f;
 	DroppedEXP = 4.0f;
 }
@@ -86,6 +95,20 @@ void ABaseEnemy::BeginPlay()
 		UE_LOG(LogTemp, Error, TEXT("ABaseEnemy: ChosenWeapon is not valid"));
 	}
 
+	if (IsValid(HealthBarWidgetClass)) 
+	{
+		HealthBarWidgetComponent->SetWidgetClass(HealthBarWidgetClass);
+
+		if (UEnemyHealthBar* HealthBar = Cast<UEnemyHealthBar>(HealthBarWidgetComponent->GetUserWidgetObject()))
+		{
+			HealthBar->SetOwnerEnemy(this);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("ABaseEnemy: HealthBarWidget is not valid"));
+		}
+	}
+
 	AnimInstance = Cast<UPlayerCharacterAnimations>(GetCustomAnimInstance());
 }
 
@@ -93,34 +116,6 @@ void ABaseEnemy::BeginPlay()
 void ABaseEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	if (IsValid(AiController))
-	{
-		APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(AiController->DetectedPlayer);
-		if (IsValid(PlayerCharacter)) {
-			float DistanceToPlayer = FVector::Dist(PlayerCharacter->GetActorLocation(), GetActorLocation());
-
-			if (ActiveWeapon == CloseRangeSystem->GetChildActor())
-			{
-				if (DistanceToPlayer <= AttackRange && AiController->bIsPlayerDetected)
-				{
-					StartAttack();
-					AiController->StopMovement();
-				}
-				else if(!GetIsAttacking()){
-					AiController->MoveToActor(PlayerCharacter);
-				}
-			}
-			else if (ActiveWeapon == LongRangeSystem->GetChildActor())
-			{
-				if (AiController->bIsPlayerDetected && !GetIsAttacking())
-				{
-					AiController->AimAtTarget(PlayerCharacter);
-					StartAttack();
-				}
-			}
-		}
-	}
 }
 
 UAnimInstance* ABaseEnemy::GetCustomAnimInstance() const

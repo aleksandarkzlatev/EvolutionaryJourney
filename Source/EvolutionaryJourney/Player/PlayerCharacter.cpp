@@ -150,7 +150,7 @@ void APlayerCharacter::Move(const FInputActionValue& InputNumber)
 {
 	FVector2D InputVector = InputNumber.Get<FVector2D>();
 
-	if (IsValid(Controller)) 
+	if (IsValid(Controller) && !GetIsAttacking()) 
 	{
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
@@ -179,7 +179,7 @@ void APlayerCharacter::Look(const FInputActionValue& InputNumber)
 
 void APlayerCharacter::Jump()
 {
-	ACharacter::Jump();
+	if (!GetIsAttacking()) ACharacter::Jump();
 }
 
 void APlayerCharacter::SwitchCamera()
@@ -212,12 +212,12 @@ void APlayerCharacter::ResetCameraSwitch()
 
 void APlayerCharacter::StartSprint()
 {
-	if (bHasStamina) 
+	if (bHasStamina && !GetIsAttacking()) 
 	{
 		GetCharacterMovement()->MaxWalkSpeed = MaxSprintSpeed;
 
 		// In the case of the sprint button being held while the player is not moving
-		if (GetVelocity().Size() >= 0.5) 
+		if (GetVelocity().Size() >= 0.5)
 		{
 			bIsSprinting = true;
 		}
@@ -237,6 +237,8 @@ void APlayerCharacter::EndSprint()
 
 void APlayerCharacter::UpdateStamina()
 {
+	if (GetIsAttacking()) bIsSprinting = false;
+
 	if (bIsSprinting) 
 	{
 		CurrStamina -= StaminaDrainTime;
@@ -250,6 +252,7 @@ void APlayerCharacter::UpdateStamina()
 			CurrStamina += StaminaRefillTime;
 		}
 	}
+
 
 	if (CurrStamina <= 0) 
 	{
@@ -267,10 +270,6 @@ void APlayerCharacter::StartAttack()
 	if (IsValid(ActiveWeapon) && !GetIsAttacking()) 
 	{
 		ActiveWeapon->StartAttack();
-	}
-	else 
-	{
-		UE_LOG(LogTemp, Error, TEXT("APlayerCharacter: ActiveWeapon is not valid"));
 	}
 }
 
@@ -344,7 +343,6 @@ bool APlayerCharacter::GetAttackIsCloseRange() const
 void APlayerCharacter::IncreaseEXP(float IncreaseBy)
 {
 	CurrentEXP += IncreaseBy;
-	UE_LOG(LogTemp, Warning, TEXT("Current EXP: %f"), CurrentEXP);
 	if (CurrentEXP >= EXPToLevelUp)
 	{
 		IncreaseLevel();

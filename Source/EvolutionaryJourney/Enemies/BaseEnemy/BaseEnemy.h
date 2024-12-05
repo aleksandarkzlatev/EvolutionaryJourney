@@ -31,7 +31,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Experience")
 	float DroppedEXP;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	class UHealthComponent* HealthComponent;
 
 	UPROPERTY(VisibleAnywhere)
@@ -48,6 +48,12 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animations")
 	class UPlayerCharacterAnimations* AnimInstance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+	class UWidgetComponent* HealthBarWidgetComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<class UEnemyHealthBar> HealthBarWidgetClass;
 
 
 	UAnimInstance* GetCustomAnimInstance() const;

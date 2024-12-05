@@ -7,6 +7,8 @@
 #include "EvolutionaryJourney/Player/PlayerCharacter.h"
 #include "EvolutionaryJourney/Enemies/BaseEnemy/BaseEnemy.h"
 #include "EvolutionaryJourney/Weapons/LongRangeSystem/LongRangeSystem.h"
+#include "Navigation/PathFollowingComponent.h"
+
 
 
 AEnemyAiController::AEnemyAiController()
@@ -27,7 +29,7 @@ AEnemyAiController::AEnemyAiController()
 		PerceptionComponent->ConfigureSense(*SightConfig);
 		PerceptionComponent->SetDominantSense(SightConfig->GetSenseImplementation());
 		bIsPlayerDetected = false;
-		PerceptionComponent->OnTargetPerceptionUpdated.AddDynamic(this, &AEnemyAiController::OntargetDetected);
+		PerceptionComponent->OnTargetPerceptionUpdated.AddDynamic(this, &AEnemyAiController::OnTargetDetected);
 	}
 	
 }
@@ -36,54 +38,92 @@ void AEnemyAiController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	AIOwner = GetPawn();
+	AIOwner = Cast<ABaseEnemy>(GetPawn());
 }
 
 void AEnemyAiController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-
+	if (AIOwner->ActiveWeapon == AIOwner->CloseRangeSystem->GetChildActor())
+	{
+		if (bIsPlayerDetected && !AIOwner->GetIsAttacking())
+		{
+			MoveToActor(DetectedPlayer);
+		}
+	}
+	else if (AIOwner->ActiveWeapon == AIOwner->LongRangeSystem->GetChildActor())
+	{
+		if (bIsPlayerDetected && !AIOwner->GetIsAttacking())
+		{
+			AimAtTarget(DetectedPlayer);
+		}
+	}
 }
 
-void AEnemyAiController::OntargetDetected(AActor* Actor, FAIStimulus Stimulus)
+void AEnemyAiController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
 {
 	if (Actor && Actor->IsA(APlayerCharacter::StaticClass()))
     {
 		if (Stimulus.WasSuccessfullySensed())
 		{
 			bIsPlayerDetected = true;
-			bIsPlayerInSight = true;
 			DetectedPlayer = Cast<APlayerCharacter>(Actor);
 
-			ABaseEnemy* Enemy = Cast<ABaseEnemy>(AIOwner);
-			ALongRangeSystem* LongRangeWeapon = Cast<ALongRangeSystem>(Enemy->LongRangeSystem->GetChildActor());
-			if (Enemy->ActiveWeapon != LongRangeWeapon) {
+			if (AIOwner->ActiveWeapon == AIOwner->CloseRangeSystem->GetChildActor())
+			{
 				MoveToActor(Actor);
+				UPathFollowingComponent* PathFollowing = GetPathFollowingComponent();
+				if (IsValid(PathFollowing))
+				{
+					PathFollowing->OnRequestFinished.AddUObject(this, &AEnemyAiController::OnMoveCompleted);
+				}
+			}
+			else if (AIOwner->ActiveWeapon == AIOwner->LongRangeSystem->GetChildActor())
+			{
+				AimAtTarget(Actor);
 			}
 		}
 		else 
 		{
 			bIsPlayerDetected = false;
-			bIsPlayerInSight = false;
 			DetectedPlayer = nullptr;
 			StopMovement();
 		}
     }
 }
 
+void AEnemyAiController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result)
+{
+	if (Result.IsSuccess())
+	{
+		APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(DetectedPlayer);
+		if (IsValid(PlayerCharacter)) {
+			float DistanceToPlayer = FVector::Dist(PlayerCharacter->GetActorLocation(), AIOwner->GetActorLocation());
+
+			if (AIOwner->ActiveWeapon == AIOwner->CloseRangeSystem->GetChildActor())
+			{
+				if (DistanceToPlayer <= AIOwner->AttackRange && bIsPlayerDetected && !AIOwner->GetIsAttacking())
+				{
+					AIOwner->StartAttack();
+					StopMovement();
+				}
+			}
+		}
+	}
+}
+
 void AEnemyAiController::AimAtTarget(AActor* Target)
 {
 	if (!Target) return;
 
-	APawn* ControlledPawn = GetPawn();
-	if (!ControlledPawn) return;
-
-	FVector EnemyLocation = ControlledPawn->GetActorLocation();
+	FVector EnemyLocation = AIOwner->GetActorLocation();
 	FVector TargetLocation = Target->GetActorLocation();
 
 	FRotator LookAtRotation = (TargetLocation - EnemyLocation).Rotation();
-	ControlledPawn->SetActorRotation(FRotator(ControlledPawn->GetActorRotation().Pitch, LookAtRotation.Yaw, ControlledPawn->GetActorRotation().Roll));
+	AIOwner->SetActorRotation(FRotator(AIOwner->GetActorRotation().Pitch, LookAtRotation.Yaw, AIOwner->GetActorRotation().Roll));
+
+	AIOwner->StartAttack();
 }
 
 

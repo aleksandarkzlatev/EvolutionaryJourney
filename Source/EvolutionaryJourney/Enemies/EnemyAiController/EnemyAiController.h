@@ -4,7 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
+#include <Perception/AIPerceptionTypes.h>
 #include "EnemyAiController.generated.h"
+
+
+
 
 /**
  * 
@@ -21,23 +25,22 @@ public:
 	bool bIsPlayerDetected;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
-	bool bIsPlayerInSight = false;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
 	class APlayerCharacter* DetectedPlayer = nullptr;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
 	class UAISenseConfig_Sight* SightConfig;
 
 	UPROPERTY(VisibleAnywhere)
-	class AActor* AIOwner;
+	class ABaseEnemy* AIOwner;
 
 	virtual void BeginPlay() override;
 
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION()
-	void OntargetDetected(AActor* Actor, FAIStimulus Stimulus);
+	void OnTargetDetected(AActor* Actor, FAIStimulus Stimulus);
+
+	void OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result);
 
 	void AimAtTarget(AActor* Target);
 };
