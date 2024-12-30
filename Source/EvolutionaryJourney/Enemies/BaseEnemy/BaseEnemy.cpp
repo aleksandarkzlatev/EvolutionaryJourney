@@ -51,7 +51,10 @@ ABaseEnemy::ABaseEnemy()
 	HealthBarWidgetComponent->SetDrawSize(FVector2D(200.0f, 50.0f));
 
 	AttackRange = 100.0f;
+	ChasePlayerRange = 800.0f;
 	DroppedEXP = 4.0f;
+
+	bIsAiming = false;
 }
 
 // Called when the game starts or when spawned

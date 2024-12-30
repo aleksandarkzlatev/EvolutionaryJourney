@@ -71,6 +71,8 @@ APlayerCharacter::APlayerCharacter()
 	MaxWalkSpeed = 500;
 	MaxSprintSpeed = 800;
 	GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
+	MaxStamina = 100;
+	CurrStamina = MaxStamina;
 	Level = 0;
 	CurrentEXP = 0;
 	EXPToLevelUp = 10.0;

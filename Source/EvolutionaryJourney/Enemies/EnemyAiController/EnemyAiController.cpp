@@ -19,8 +19,8 @@ AEnemyAiController::AEnemyAiController()
 	SightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("SightConfig"));
 	if (IsValid(SightConfig))
 	{
-		SightConfig->SightRadius = 1000.0f;
-		SightConfig->LoseSightRadius = 1800.0f;
+		SightConfig->SightRadius = 3500.0f;
+		SightConfig->LoseSightRadius = 3500.0f;
 		SightConfig->PeripheralVisionAngleDegrees = 60.0f;
 		SightConfig->DetectionByAffiliation.bDetectEnemies = true;
 		SightConfig->DetectionByAffiliation.bDetectNeutrals = true;
@@ -44,21 +44,6 @@ void AEnemyAiController::BeginPlay()
 void AEnemyAiController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	if (AIOwner->ActiveWeapon == AIOwner->CloseRangeSystem->GetChildActor())
-	{
-		if (bIsPlayerDetected && !AIOwner->GetIsAttacking())
-		{
-			MoveToActor(DetectedPlayer);
-		}
-	}
-	else if (AIOwner->ActiveWeapon == AIOwner->LongRangeSystem->GetChildActor())
-	{
-		if (bIsPlayerDetected && !AIOwner->GetIsAttacking())
-		{
-			AimAtTarget(DetectedPlayer);
-		}
-	}
 }
 
 void AEnemyAiController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
@@ -72,23 +57,22 @@ void AEnemyAiController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
 
 			if (AIOwner->ActiveWeapon == AIOwner->CloseRangeSystem->GetChildActor())
 			{
-				MoveToActor(Actor);
+				StartMoveCheck();
 				UPathFollowingComponent* PathFollowing = GetPathFollowingComponent();
 				if (IsValid(PathFollowing))
 				{
+					PathFollowing->OnRequestFinished.RemoveAll(this);
 					PathFollowing->OnRequestFinished.AddUObject(this, &AEnemyAiController::OnMoveCompleted);
 				}
 			}
 			else if (AIOwner->ActiveWeapon == AIOwner->LongRangeSystem->GetChildActor())
 			{
-				AimAtTarget(Actor);
+				StartAimCheck();
 			}
 		}
-		else 
+		else
 		{
 			bIsPlayerDetected = false;
-			DetectedPlayer = nullptr;
-			StopMovement();
 		}
     }
 }
@@ -98,7 +82,8 @@ void AEnemyAiController::OnMoveCompleted(FAIRequestID RequestID, const FPathFoll
 	if (Result.IsSuccess())
 	{
 		APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(DetectedPlayer);
-		if (IsValid(PlayerCharacter)) {
+		if (IsValid(PlayerCharacter)) 
+		{
 			float DistanceToPlayer = FVector::Dist(PlayerCharacter->GetActorLocation(), AIOwner->GetActorLocation());
 
 			if (AIOwner->ActiveWeapon == AIOwner->CloseRangeSystem->GetChildActor())
@@ -108,8 +93,69 @@ void AEnemyAiController::OnMoveCompleted(FAIRequestID RequestID, const FPathFoll
 					AIOwner->StartAttack();
 					StopMovement();
 				}
+				else if (DistanceToPlayer <= AIOwner->ChasePlayerRange &&!AIOwner->GetIsAttacking())
+				{
+					MoveToActor(DetectedPlayer);
+				}
 			}
 		}
+	}
+}
+
+void AEnemyAiController::StartMoveCheck()
+{
+	GetWorld()->GetTimerManager().SetTimer(MoveCheckTimerHandle, this, &AEnemyAiController::CheckAndMoveToTarget, 0.5f, true);
+}
+
+void AEnemyAiController::StopMoveCheck()
+{
+	GetWorld()->GetTimerManager().ClearTimer(MoveCheckTimerHandle);
+}
+
+void AEnemyAiController::CheckAndMoveToTarget()
+{
+	APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(DetectedPlayer);
+	if (IsValid(PlayerCharacter)) 
+	{
+		float DistanceToPlayer = FVector::Dist(PlayerCharacter->GetActorLocation(), AIOwner->GetActorLocation());
+		if ((bIsPlayerDetected && !AIOwner->GetIsAttacking()))
+		{
+			MoveToActor(DetectedPlayer);
+		}
+		else if (DistanceToPlayer <= AIOwner->ChasePlayerRange && !AIOwner->GetIsAttacking())
+		{
+			MoveToActor(DetectedPlayer);
+		}
+		else if (DistanceToPlayer > AIOwner->ChasePlayerRange && !AIOwner->GetIsAttacking() && !bIsPlayerDetected)
+		{
+			StopMoveCheck();
+			StopMovement();
+			DetectedPlayer = nullptr;
+		}
+	}
+}
+
+void AEnemyAiController::StartAimCheck()
+{
+	GetWorld()->GetTimerManager().SetTimer(AimCheckTimerHandle, this, &AEnemyAiController::CheckAndAimAtTarget, 0.7f, true);
+}
+
+void AEnemyAiController::StopAimCheck()
+{
+	GetWorld()->GetTimerManager().ClearTimer(AimCheckTimerHandle);
+}
+
+void AEnemyAiController::CheckAndAimAtTarget()
+{
+	if (bIsPlayerDetected && !AIOwner->GetIsAttacking())
+	{
+		AimAtTarget(DetectedPlayer);
+	}
+	else if (!AIOwner->GetIsAttacking() && !bIsPlayerDetected)
+	{
+		StopAimCheck();
+		ClearFocus(EAIFocusPriority::Gameplay);
+		DetectedPlayer = nullptr;
 	}
 }
 
@@ -117,11 +163,7 @@ void AEnemyAiController::AimAtTarget(AActor* Target)
 {
 	if (!Target) return;
 
-	FVector EnemyLocation = AIOwner->GetActorLocation();
-	FVector TargetLocation = Target->GetActorLocation();
-
-	FRotator LookAtRotation = (TargetLocation - EnemyLocation).Rotation();
-	AIOwner->SetActorRotation(FRotator(AIOwner->GetActorRotation().Pitch, LookAtRotation.Yaw, AIOwner->GetActorRotation().Roll));
+	SetFocus(Target);
 
 	AIOwner->StartAttack();
 }

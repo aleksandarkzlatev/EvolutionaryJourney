@@ -24,6 +24,10 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	bool bIsPlayerDetected;
 
+	FTimerHandle AimCheckTimerHandle;
+
+	FTimerHandle MoveCheckTimerHandle;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
 	class APlayerCharacter* DetectedPlayer = nullptr;
 
@@ -41,6 +45,18 @@ public:
 	void OnTargetDetected(AActor* Actor, FAIStimulus Stimulus);
 
 	void OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result);
+
+	void StartMoveCheck();
+
+	void StopMoveCheck();
+
+	void CheckAndMoveToTarget();
+
+	void StartAimCheck();
+
+	void StopAimCheck();
+
+	void CheckAndAimAtTarget();
 
 	void AimAtTarget(AActor* Target);
 };

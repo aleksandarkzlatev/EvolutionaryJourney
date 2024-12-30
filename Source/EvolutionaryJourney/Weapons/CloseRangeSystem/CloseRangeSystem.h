@@ -33,6 +33,8 @@ public:
 
 	void StartAttack() override;
 
+	void EndAttack() override;
+
 	UFUNCTION(BlueprintCallable)
 	void TurnCollisionOn();
 

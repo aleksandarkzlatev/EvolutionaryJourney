@@ -90,6 +90,12 @@ void ACloseRangeSystem::StartAttack()
 	}
 }
 
+void ACloseRangeSystem::EndAttack()
+{
+    IAttackInterface* WeaponUser = Cast<IAttackInterface>(WeaponOwner);
+    WeaponUser->SetIsAttacking(false);
+}
+
 void ACloseRangeSystem::TurnCollisionOn()
 {
     if (IsValid(CollisionComponent)) CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);

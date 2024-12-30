@@ -21,6 +21,10 @@
 		{
 			"Name": "VisualStudioTools",
 			"Enabled": false
+		},
+		{
+			"Name": "Water",
+			"Enabled": true
 		}
 	]
 }

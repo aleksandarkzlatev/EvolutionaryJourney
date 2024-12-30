@@ -6,6 +6,8 @@
 #include "EvolutionaryJourney/Animations/AnimationInterface/AttackInterface.h"
 #include "EvolutionaryJourney/Components/Health/HealthComponent.h"
 #include "EvolutionaryJourney/Weapons/BaseProjectile/BaseProjectile.h"
+#include "EvolutionaryJourney/Enemies/BaseEnemy/BaseEnemy.h"
+#include "EvolutionaryJourney/Enemies/EnemyAiController/EnemyAiController.h"
 
 
 
@@ -78,6 +80,12 @@ void ALongRangeSystem::StartAttack()
         UE_LOG(LogTemp, Error, TEXT("UCloseRangeWeaponComponent: Owner is not valid"));
         return;
     }
+}
+
+void ALongRangeSystem::EndAttack()
+{
+    IAttackInterface* WeaponUser = Cast<IAttackInterface>(WeaponOwner);
+    WeaponUser->SetIsAttacking(false);
 }
 
 void ALongRangeSystem::SpawnProjectile()

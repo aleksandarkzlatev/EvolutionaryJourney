@@ -32,5 +32,5 @@ public:
 	virtual void StartAttack();
 
 	UFUNCTION(BlueprintCallable)
-	void EndAttack();
+	virtual void EndAttack();
 };

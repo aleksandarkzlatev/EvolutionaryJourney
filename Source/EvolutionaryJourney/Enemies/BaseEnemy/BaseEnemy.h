@@ -28,8 +28,14 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AI")
 	float AttackRange;
 
+	UPROPERTY(EditAnywhere, Category="AI")
+	float ChasePlayerRange;
+
 	UPROPERTY(EditAnywhere, Category = "Experience")
 	float DroppedEXP;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool bIsAiming;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	class UHealthComponent* HealthComponent;
