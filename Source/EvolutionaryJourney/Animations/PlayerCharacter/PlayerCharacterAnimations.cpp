@@ -20,6 +20,16 @@ void UPlayerCharacterAnimations::NativeUpdateAnimation(float DeltaSeconds)
 	if (Character)
 	{
 		bIsJumping = Character->GetCharacterMovement()->IsFalling();
+
+		FVector Forward = Character->GetActorForwardVector();
+		FVector Right = Character->GetActorRightVector();
+
+		FVector NormalizedVelocity = LateralVelocity.GetSafeNormal();
+
+		float ForwardValue = FVector::DotProduct(NormalizedVelocity, Forward);
+		float RightValue = FVector::DotProduct(NormalizedVelocity, Right);
+
+		Direction = FMath::Atan2(RightValue, ForwardValue) * (180.0f / PI);
 	}
 }
 

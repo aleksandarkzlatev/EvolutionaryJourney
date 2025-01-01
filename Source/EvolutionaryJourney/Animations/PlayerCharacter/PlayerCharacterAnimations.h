@@ -21,6 +21,9 @@ protected:
 	float Speed;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
+	float Direction;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	bool bIsJumping;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
