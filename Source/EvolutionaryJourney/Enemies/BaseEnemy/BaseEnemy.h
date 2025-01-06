@@ -61,6 +61,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
 	TSubclassOf<class UEnemyHealthBar> HealthBarWidgetClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Detection")
+	class USphereComponent* ProximitySphere;
+
 
 	UAnimInstance* GetCustomAnimInstance() const;
 	UFUNCTION(BlueprintCallable)
@@ -70,4 +73,8 @@ public:
 	bool GetAttackIsCloseRange() const;
 
 	void StartAttack();
+
+	void OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	void OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 };

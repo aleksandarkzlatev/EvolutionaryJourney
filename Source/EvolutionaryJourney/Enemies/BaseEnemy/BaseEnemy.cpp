@@ -13,6 +13,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "EvolutionaryJourney/Player/PlayerCharacter.h"
 #include "Components/WidgetComponent.h"
+#include "Components/SphereComponent.h"
 #include "EvolutionaryJourney/UI/Enemy/HealthBar/EnemyHealthBar.h"
 
 
@@ -49,6 +50,14 @@ ABaseEnemy::ABaseEnemy()
 	HealthBarWidgetComponent->SetRelativeLocation(FVector(0.0f, 0.0f, 100.0f));
 	HealthBarWidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
 	HealthBarWidgetComponent->SetDrawSize(FVector2D(200.0f, 50.0f));
+	HealthBarWidgetComponent->SetVisibility(false);
+
+	ProximitySphere = CreateDefaultSubobject<USphereComponent>(TEXT("ProximitySphere"));
+	ProximitySphere->SetupAttachment(RootComponent);
+	ProximitySphere->SetSphereRadius(500.0f);
+	ProximitySphere->SetCollisionProfileName(TEXT("OverlapAll"));
+	ProximitySphere->OnComponentBeginOverlap.AddDynamic(this, &ABaseEnemy::OnBeginOverlap);
+	ProximitySphere->OnComponentEndOverlap.AddDynamic(this, &ABaseEnemy::OnEndOverlap);
 
 	AttackRange = 100.0f;
 	ChasePlayerRange = 800.0f;
@@ -167,4 +176,21 @@ void ABaseEnemy::StartAttack()
 		ActiveWeapon->StartAttack();
 	}
 }
+
+void ABaseEnemy::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (IsValid(OtherActor) && OtherActor->IsA(APlayerCharacter::StaticClass()))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ABaseEnemy: Player is in range"));
+	}
+}
+
+void ABaseEnemy::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (IsValid(OtherActor) && OtherActor->IsA(APlayerCharacter::StaticClass()))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ABaseEnemy: Player is out of range"));
+	}
+}
+
 
