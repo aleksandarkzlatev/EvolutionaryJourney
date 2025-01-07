@@ -13,7 +13,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "EvolutionaryJourney/Player/PlayerCharacter.h"
 #include "Components/WidgetComponent.h"
-#include "Components/SphereComponent.h"
+#include "Components/BoxComponent.h"
 #include "EvolutionaryJourney/UI/Enemy/HealthBar/EnemyHealthBar.h"
 
 
@@ -50,14 +50,14 @@ ABaseEnemy::ABaseEnemy()
 	HealthBarWidgetComponent->SetRelativeLocation(FVector(0.0f, 0.0f, 100.0f));
 	HealthBarWidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
 	HealthBarWidgetComponent->SetDrawSize(FVector2D(200.0f, 50.0f));
-	HealthBarWidgetComponent->SetVisibility(false);
 
-	ProximitySphere = CreateDefaultSubobject<USphereComponent>(TEXT("ProximitySphere"));
-	ProximitySphere->SetupAttachment(RootComponent);
-	ProximitySphere->SetSphereRadius(500.0f);
-	ProximitySphere->SetCollisionProfileName(TEXT("OverlapAll"));
-	ProximitySphere->OnComponentBeginOverlap.AddDynamic(this, &ABaseEnemy::OnBeginOverlap);
-	ProximitySphere->OnComponentEndOverlap.AddDynamic(this, &ABaseEnemy::OnEndOverlap);
+	ProximityBox = CreateDefaultSubobject<UBoxComponent>(TEXT("ProximityBox"));
+	ProximityBox->SetupAttachment(RootComponent);
+	ProximityBox->SetBoxExtent(FVector(300.0f, 300.0f, 100.0f));
+	ProximityBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	ProximityBox->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
+	ProximityBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	
 
 	AttackRange = 100.0f;
 	ChasePlayerRange = 800.0f;
@@ -114,12 +114,16 @@ void ABaseEnemy::BeginPlay()
 		if (UEnemyHealthBar* HealthBar = Cast<UEnemyHealthBar>(HealthBarWidgetComponent->GetUserWidgetObject()))
 		{
 			HealthBar->SetOwnerEnemy(this);
+			HealthBar->SetVisibility(ESlateVisibility::Hidden);
 		}
 		else
 		{
 			UE_LOG(LogTemp, Error, TEXT("ABaseEnemy: HealthBarWidget is not valid"));
 		}
 	}
+
+	ProximityBox->OnComponentBeginOverlap.AddDynamic(this, &ABaseEnemy::OnPlayerEnterProximity);
+	ProximityBox->OnComponentEndOverlap.AddDynamic(this, &ABaseEnemy::OnPlayerExitProximity);
 
 	AnimInstance = Cast<UPlayerCharacterAnimations>(GetCustomAnimInstance());
 }
@@ -177,20 +181,35 @@ void ABaseEnemy::StartAttack()
 	}
 }
 
-void ABaseEnemy::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void ABaseEnemy::OnPlayerEnterProximity(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (IsValid(OtherActor) && OtherActor->IsA(APlayerCharacter::StaticClass()))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ABaseEnemy: Player is in range"));
+		if (UEnemyHealthBar* HealthBar = Cast<UEnemyHealthBar>(HealthBarWidgetComponent->GetUserWidgetObject()))
+		{
+			HealthBar->SetVisibility(ESlateVisibility::Visible);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("ABaseEnemy: HealthBarWidget is not valid"));
+		}
 	}
 }
 
-void ABaseEnemy::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+void ABaseEnemy::OnPlayerExitProximity(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	if (IsValid(OtherActor) && OtherActor->IsA(APlayerCharacter::StaticClass()))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ABaseEnemy: Player is out of range"));
+		if (UEnemyHealthBar* HealthBar = Cast<UEnemyHealthBar>(HealthBarWidgetComponent->GetUserWidgetObject()))
+		{
+			HealthBar->SetVisibility(ESlateVisibility::Hidden);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("ABaseEnemy: HealthBarWidget is not valid"));
+		}
 	}
 }
+
 
 

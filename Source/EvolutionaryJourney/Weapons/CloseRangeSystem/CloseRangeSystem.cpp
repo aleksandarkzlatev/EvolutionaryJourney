@@ -6,6 +6,7 @@
 #include "EvolutionaryJourney/Animations/AnimationInterface/AttackInterface.h"
 #include "EvolutionaryJourney/Components/Health/HealthComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "EvolutionaryJourney/Enemies/BaseEnemy/BaseEnemy.h"
 
 
 
@@ -110,6 +111,7 @@ void ACloseRangeSystem::BeginOverlap(AActor* OverlappedActor, AActor* OtherActor
 {
     if (IsValid(OtherActor) && OtherActor != WeaponOwner)
     {
+        if (WeaponOwner->IsA(ABaseEnemy::StaticClass()) && OtherActor->IsA(ABaseEnemy::StaticClass())) return;
         UHealthComponent* HealthComponent = OtherActor->FindComponentByClass<UHealthComponent>();
         if (IsValid(HealthComponent))
         { 

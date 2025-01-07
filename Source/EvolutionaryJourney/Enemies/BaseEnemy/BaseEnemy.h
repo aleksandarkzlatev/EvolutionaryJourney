@@ -62,7 +62,7 @@ public:
 	TSubclassOf<class UEnemyHealthBar> HealthBarWidgetClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Detection")
-	class USphereComponent* ProximitySphere;
+	class UBoxComponent* ProximityBox;
 
 
 	UAnimInstance* GetCustomAnimInstance() const;
@@ -74,7 +74,17 @@ public:
 
 	void StartAttack();
 
-	void OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
+	void OnPlayerEnterProximity(UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult);
 
-	void OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	UFUNCTION()
+	void OnPlayerExitProximity(UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex);
 };
