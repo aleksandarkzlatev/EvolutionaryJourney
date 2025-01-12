@@ -14,7 +14,6 @@ ACloseRangeSystem::ACloseRangeSystem()
 {
     CollisionComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("CollisionComponent"));
     RootComponent = CollisionComponent;
-    CollisionComponent->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Ignore);
 
     WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
     WeaponMesh->SetupAttachment(CollisionComponent);

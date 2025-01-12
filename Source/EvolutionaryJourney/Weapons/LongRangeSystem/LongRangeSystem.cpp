@@ -77,7 +77,7 @@ void ALongRangeSystem::StartAttack()
     }
     else
     {
-        UE_LOG(LogTemp, Error, TEXT("UCloseRangeWeaponComponent: Owner is not valid"));
+        UE_LOG(LogTemp, Error, TEXT("ULongRangeWeaponComponent: Owner is not valid"));
         return;
     }
 }

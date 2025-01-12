@@ -96,6 +96,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "EnhancedInput")
 	class UInputAction* SwitchToLongRangeWeaponAction;
 
+	UPROPERTY(EditAnywhere, Category = "EnhancedInput")
+	class UInputAction* QuitGameAction;
+
 
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
@@ -140,6 +143,7 @@ protected:
 	void StartAttack();
 	void SwitchToCloseRangeWeapon();
 	void SwitchToLongRangeWeapon();
+	void QuitGame();
 	UAnimInstance* GetCustomAnimInstance() const;
 	UFUNCTION(BlueprintCallable)
 	void SetIsAttacking(bool bIsAttacking);

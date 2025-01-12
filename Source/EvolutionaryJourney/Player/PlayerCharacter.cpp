@@ -15,6 +15,7 @@
 #include "Components/ChildActorComponent.h"
 #include "Perception//AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISense_Sight.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -126,7 +127,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	if (APlayerController* PlayerController = Cast < APlayerController>(Controller)) 
 	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer())) 
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = 
+			ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer())) 
 		{
 			Subsystem->AddMappingContext(InputMapping, 0);
 		}
@@ -143,6 +145,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		Input->BindAction(AttackAction, ETriggerEvent::Completed, this, &APlayerCharacter::StartAttack);
 		Input->BindAction(SwitchToCloseRangeWeaponAction, ETriggerEvent::Triggered, this, &APlayerCharacter::SwitchToCloseRangeWeapon);
 		Input->BindAction(SwitchToLongRangeWeaponAction, ETriggerEvent::Triggered, this, &APlayerCharacter::SwitchToLongRangeWeapon);
+		Input->BindAction(QuitGameAction, ETriggerEvent::Triggered, this, &APlayerCharacter::QuitGame);
 	}
 
 
@@ -300,6 +303,14 @@ void APlayerCharacter::SwitchToLongRangeWeapon()
 		LongRangeWeapon->WeaponIsActive = true;
 		CloseRangeSystem->SetVisibility(false);
 		LongRangeSystem->SetVisibility(true);
+	}
+}
+
+void APlayerCharacter::QuitGame()
+{
+	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	{
+		PlayerController->ConsoleCommand("quit");
 	}
 }
 

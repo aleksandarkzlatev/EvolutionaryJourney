@@ -36,7 +36,7 @@ void UHealthComponent::TakeDamage(AActor* DealtBy, int Damage)
 	}
 
 	FTimerHandle InvincibilityDelay;
-	GetWorld()->GetTimerManager().SetTimer(InvincibilityDelay, this, &UHealthComponent::AllowedToTakeDamage, 0.5f, false);
+	GetWorld()->GetTimerManager().SetTimer(InvincibilityDelay, this, &UHealthComponent::AllowedToTakeDamage, 0.25f, false);
 
 	if (Health <= 0) 
 	{
