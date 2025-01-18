@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "EvolutionaryJourney/Animations/AnimationInterface/AttackInterface.h"
+#include "EvolutionaryJourney/UI/Player/PlayerHUD/PlayerHUD.h"
 #include "InputActionValue.h"
 #include "PlayerCharacter.generated.h"
 
@@ -23,6 +24,8 @@ protected:
 	bool bCanSwitchCamera;
 	bool bIsSprinting;
 	bool bHasStamina;
+	bool bCanPickupItem;
+	bool bCanToggleInventory;
 
 
 	UPROPERTY(EditAnywhere, Category = "Movement")
@@ -56,6 +59,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Expirience")
 	float EXPToLevelUp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "UI")
+	UPlayerHUD* PlayerHUDWidget;
 
 	// Basic component needed for the player vision
 	UPROPERTY(EditAnywhere)
@@ -99,7 +105,16 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "EnhancedInput")
 	class UInputAction* QuitGameAction;
 
+	UPROPERTY(EditAnywhere, Category = "EnhancedInput")
+	class UInputAction* InteractAction;
 
+	UPROPERTY(EditAnywhere, Category = "EnhancedInput")
+	class UInputAction* ToggleInventoryAction;
+
+
+
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UPlayerHUD> PlayerHUDWidgetClass;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	class UHealthComponent* HealthComponent;
@@ -130,26 +145,50 @@ protected:
 
 
 	void Move(const FInputActionValue& ActionValue);
+
 	void Look(const FInputActionValue& ActionValue);
+
 	void Jump();
 
 	void SwitchCamera();
+
 	void ResetCameraSwitch();
 
 	void StartSprint();
+
 	void EndSprint();
+
 	void UpdateStamina();
 
 	void StartAttack();
+
 	void SwitchToCloseRangeWeapon();
+
 	void SwitchToLongRangeWeapon();
+
 	void QuitGame();
+
+	void InteractWithItem();
+
+	void InteractWithItemDelay();
+
+	void ToggleInventory();
+
+	void ToggleInventoryDelay();
+
+	void UpdateInventory();
+
 	UAnimInstance* GetCustomAnimInstance() const;
+
 	UFUNCTION(BlueprintCallable)
 	void SetIsAttacking(bool bIsAttacking);
+
 	bool GetIsAttacking() const;
+
 	void SetAttackIsCloseRange(bool bIsCloseRange);
+
 	bool GetAttackIsCloseRange() const;
+
 	void IncreaseLevel();
 
 	
@@ -159,6 +198,10 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	bool GetIsFirstPerson();
+
+	UInventoryComponent* GetInventoryComponent() const;
 
 	void IncreaseEXP(float IncreaseBy);
 

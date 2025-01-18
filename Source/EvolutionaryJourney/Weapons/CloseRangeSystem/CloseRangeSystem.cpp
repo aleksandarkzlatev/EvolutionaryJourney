@@ -32,14 +32,11 @@ void ACloseRangeSystem::InitializeWeapon(AActor* InitOwner)
     if (IsValid(InitOwner))
     {
         WeaponOwner = InitOwner;
-        ACharacter* Character = Cast<ACharacter>(WeaponOwner);
-        if (IsValid(Character))
+        if (ACharacter* Character = Cast<ACharacter>(WeaponOwner))
         {
-            USkeletalMeshComponent* MeshComp = Character->GetMesh();
-            if (IsValid(MeshComp))
-            {
-                IAttackInterface* WeaponUser = Cast<IAttackInterface>(WeaponOwner);
-                if (WeaponUser)
+            if (USkeletalMeshComponent* MeshComp = Character->GetMesh())
+            {       
+                if (IAttackInterface* WeaponUser = Cast<IAttackInterface>(WeaponOwner))
                 {
                     OnActorBeginOverlap.AddDynamic(this, &ACloseRangeSystem::BeginOverlap);
                     CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);

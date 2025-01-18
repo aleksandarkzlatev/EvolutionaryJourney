@@ -28,14 +28,11 @@ void ALongRangeSystem::InitializeWeapon(AActor* InitOwner)
     if (IsValid(InitOwner))
     {
         WeaponOwner = InitOwner;
-        ACharacter* Character = Cast<ACharacter>(WeaponOwner);
-        if (IsValid(Character))
-        {
-            USkeletalMeshComponent* MeshComp = Character->GetMesh();
-            if (IsValid(MeshComp))
+        if (ACharacter* Character = Cast<ACharacter>(WeaponOwner))
+        {            
+            if (USkeletalMeshComponent* MeshComp = Character->GetMesh())
             {
-                IAttackInterface* WeaponUser = Cast<IAttackInterface>(WeaponOwner);
-                if (WeaponUser)
+                if (IAttackInterface* WeaponUser = Cast<IAttackInterface>(WeaponOwner))
                 {
                     WeaponUser->SetIsAttacking(false);
                 }

@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/NoExportTypes.h"
-#include "Item.generated.h"
+#include "Blueprint/UserWidget.h"
+#include "PlayerHUD.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class EVOLUTIONARYJOURNEY_API UItem : public UObject
+class EVOLUTIONARYJOURNEY_API UPlayerHUD : public UUserWidget
 {
 	GENERATED_BODY()
 	
