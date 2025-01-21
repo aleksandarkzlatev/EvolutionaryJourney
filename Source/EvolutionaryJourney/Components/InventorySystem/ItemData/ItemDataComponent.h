@@ -31,6 +31,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Data")
 	int32 Quantity;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Data")
+	UDataTable* ItemTable;
+
 	UFUNCTION()
 	FString LookAt();
 	UFUNCTION()

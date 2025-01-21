@@ -44,7 +44,7 @@ void UItemDataComponent::InteractWith(AActor* InventoryOwner)
 	{
 		if (UInventoryComponent* InventoryComponent = Player->GetInventoryComponent())
 		{
-			if (!InventoryComponent->AddToInventory(ItemID.RowName.ToString(), Quantity))
+			if (!InventoryComponent->AddToInventory(this))
 			{
 				GetOwner()->Destroy();
 			}

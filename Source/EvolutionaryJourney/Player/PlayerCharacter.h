@@ -4,6 +4,7 @@
 #include "GameFramework/Character.h"
 #include "EvolutionaryJourney/Animations/AnimationInterface/AttackInterface.h"
 #include "EvolutionaryJourney/UI/Player/PlayerHUD/PlayerHUD.h"
+#include "EvolutionaryJourney/UI/Player/InventoryGrid/InventoryGrid.h"
 #include "InputActionValue.h"
 #include "PlayerCharacter.generated.h"
 
@@ -24,6 +25,7 @@ protected:
 	bool bCanSwitchCamera;
 	bool bIsSprinting;
 	bool bHasStamina;
+	bool bHasInfiniteStamina;
 	bool bCanPickupItem;
 	bool bCanToggleInventory;
 
@@ -176,7 +178,9 @@ protected:
 
 	void ToggleInventoryDelay();
 
-	void UpdateInventory();
+	void OpenInventory(UInventoryGrid* InventoryGrid);
+
+	void CloseInventory();
 
 	UAnimInstance* GetCustomAnimInstance() const;
 
@@ -201,7 +205,15 @@ public:
 
 	bool GetIsFirstPerson();
 
+	void SetHasInfiniteStaminaTrue();
+
+	void SetHasInfiniteStaminaTrueDelay();
+
 	UInventoryComponent* GetInventoryComponent() const;
+
+	UHealthComponent* GetHealthComponent() const;
+
+	void UpdateInventory();
 
 	void IncreaseEXP(float IncreaseBy);
 

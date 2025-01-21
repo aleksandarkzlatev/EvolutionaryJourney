@@ -5,6 +5,9 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "EvolutionaryJourney/Components/InventorySystem/SlotStruct/FSlotStruct.h"
+#include "EvolutionaryJourney/Components/InventorySystem/ItemData/ItemDataComponent.h"
+#include "EvolutionaryJourney/Components/InventorySystem/ItemStruct/FItemStruct.h"
+#include "EvolutionaryJourney/UI/Player/DisplayMessage/DisplayMessage.h"
 #include "InventoryComponent.generated.h"
 
 
@@ -44,14 +47,41 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 	class AActor* LookAtActor;
 
-	int32 AddToInventory(FString ItemID, int32 Quantity);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	TSubclassOf<UDisplayMessage> DisplayMessageClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	UDisplayMessage* DisplayMessage;
+
+	int32 AddToInventory(UItemDataComponent* ItemData);
+
 	int32 FindSlot(FString ItemID);
-	int32 GetMaxStackSizes(FDataTableRowHandle ItemID);
+
+	int32 GetMaxStackSizes(FString ItemID);
+
 	void AddToStack(int32 index, int32 Quantity);
+
 	int32 FindEmptySlot();
-	bool CreateNewStack(FString ItemID, int32 Quantity);
+
+	bool CreateNewStack(FString ItemID, int32 Quantity, UDataTable* ItemTable, FName ItemRowName);
+
 	void Debug_PrintInventory();
-	void RemoveFromInventory(class AActor* ItemToRemove);
+
+	UFUNCTION(BlueprintCallable)
+	void RemoveFromInventory(int32 index, bool RemoveWholeStack, bool IsConsumed);
+
+	void DropItem(FString ItemID, int32 Quantity);
+
+	bool ConsumeItem(int32 index);
+
+	FItemStruct* GetItemData(FString ItemID);
+
+	FVector GetDropLocation();
+
+	UFUNCTION(BlueprintCallable)
+	void TransferSlots(int32 SourceIndex, UInventoryComponent* SourceInventory, int32 DestinationIndex);
+
 	void InteractionTrace();
+
 	void InteractionWith();
 };

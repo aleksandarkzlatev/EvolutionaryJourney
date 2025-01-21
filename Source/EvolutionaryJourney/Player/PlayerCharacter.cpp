@@ -18,7 +18,6 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Blueprint/UserWidget.h"
 #include "EvolutionaryJourney/UI/Player/PlayerInventoryMenu/PlayerInventoryMenu.h"
-#include "EvolutionaryJourney/UI/Player/InventoryGrid/InventoryGrid.h"
 #include "EvolutionaryJourney/UI/Player/PlayerStatBars/PlayerStatBars.h"
 
 // Sets default values
@@ -224,9 +223,26 @@ bool APlayerCharacter::GetIsFirstPerson()
 	return bIsFirstPerson;
 }
 
+void APlayerCharacter::SetHasInfiniteStaminaTrue()
+{
+	bHasInfiniteStamina = true;
+	FTimerHandle InfiniteStaminaTimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(InfiniteStaminaTimerHandle, this, &APlayerCharacter::SetHasInfiniteStaminaTrueDelay, 5.0f, false);
+}
+
+void APlayerCharacter::SetHasInfiniteStaminaTrueDelay()
+{
+	bHasInfiniteStamina = false;
+}
+
 UInventoryComponent* APlayerCharacter::GetInventoryComponent() const
 {
 	return InventoryComponent;
+}
+
+UHealthComponent* APlayerCharacter::GetHealthComponent() const
+{
+	return HealthComponent;
 }
 
 void APlayerCharacter::SwitchCamera()
@@ -264,7 +280,7 @@ void APlayerCharacter::StartSprint()
 		GetCharacterMovement()->MaxWalkSpeed = MaxSprintSpeed;
 
 		// In the case of the sprint button being held while the player is not moving
-		if (GetVelocity().Size() >= 0.5)
+		if (GetVelocity().Size() >= 0.5 && !bHasInfiniteStamina)
 		{
 			bIsSprinting = true;
 		}
@@ -389,10 +405,12 @@ void APlayerCharacter::ToggleInventory()
 			{
 				PlayerInvenetoryWidget->SetVisibility(ESlateVisibility::Visible);
 				UpdateInventory();
+				OpenInventory(InventoryGrid);
 			}
 			else
 			{
 				PlayerInvenetoryWidget->SetVisibility(ESlateVisibility::Hidden);
+				CloseInventory();
 			}
 		}
 		bCanToggleInventory = false;
@@ -419,6 +437,31 @@ void APlayerCharacter::UpdateInventory()
 				InventoryGrid->DisplayInventory();
 			}
 		}
+	}
+}
+
+void APlayerCharacter::OpenInventory(UInventoryGrid* InventoryGrid)
+{
+	APlayerController* PlayerController = Cast<APlayerController>(Controller);
+	if (PlayerController)
+	{
+		FInputModeGameAndUI InputMode;
+		InputMode.SetWidgetToFocus(InventoryGrid->TakeWidget());
+		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+		PlayerController->SetInputMode(InputMode);
+		PlayerController->bShowMouseCursor = true;
+
+		InventoryGrid->SetKeyboardFocus();
+	}
+}
+
+void APlayerCharacter::CloseInventory()
+{
+	APlayerController* PlayerController = Cast<APlayerController>(Controller);
+	if (PlayerController)
+	{
+		PlayerController->SetInputMode(FInputModeGameOnly());
+		PlayerController->bShowMouseCursor = false;
 	}
 }
 

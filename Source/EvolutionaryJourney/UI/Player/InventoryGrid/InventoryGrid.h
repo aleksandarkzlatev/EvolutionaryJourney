@@ -13,8 +13,12 @@ UCLASS()
 class EVOLUTIONARYJOURNEY_API UInventoryGrid : public UUserWidget
 {
 	GENERATED_BODY()
-	
+
+protected:
+	virtual void NativeConstruct() override;
+
 public:
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "UI")
 	AActor* Owner;
 

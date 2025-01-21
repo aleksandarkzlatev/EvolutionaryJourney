@@ -68,9 +68,22 @@ float UHealthComponent::GetHealth()
 	return Health;
 }
 
-void UHealthComponent::RecoverHealth(float newHealth)
+bool UHealthComponent::RecoverHealth(float addedHealth)
 {
-	Health += newHealth;
+	if (Health < MaxHealth)
+	{
+		if (Health + addedHealth <= MaxHealth)
+		{
+			Health += addedHealth;
+			return true;
+		}
+		else if (Health + addedHealth > MaxHealth)
+		{
+			Health = MaxHealth;
+			return true;
+		}
+	}
+	return false;
 }
 
 float UHealthComponent::GetMaxHealth()

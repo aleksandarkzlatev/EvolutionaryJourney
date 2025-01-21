@@ -28,6 +28,6 @@ public:
 	int32 ItemStackSize;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
-	AActor* ItemClass;
+	TSubclassOf<AActor> ItemClass;
 
 };

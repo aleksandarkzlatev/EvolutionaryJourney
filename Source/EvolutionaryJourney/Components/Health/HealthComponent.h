@@ -37,7 +37,8 @@ public:
 	void TakeDamage(AActor* DealtBy, int Damage);
 
 	float GetHealth();
-	void RecoverHealth(float addedHealth);
+
+	bool RecoverHealth(float addedHealth);
 
 	float GetMaxHealth();
 };

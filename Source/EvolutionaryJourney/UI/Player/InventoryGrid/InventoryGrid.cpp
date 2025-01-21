@@ -3,3 +3,9 @@
 
 #include "EvolutionaryJourney/UI/Player/InventoryGrid/InventoryGrid.h"
 
+void UInventoryGrid::NativeConstruct()
+{
+	Super::NativeConstruct();
+
+	SetIsFocusable(true);
+}
