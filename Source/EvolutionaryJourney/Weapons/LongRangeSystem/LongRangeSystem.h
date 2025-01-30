@@ -38,6 +38,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SpawnProjectile();
 
+	void SpawnProjectileDestroy();
+
 	UFUNCTION()
 	void BeginOverlap(AActor* OverlappedActor, AActor* OtherActor);
 };

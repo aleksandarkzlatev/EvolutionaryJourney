@@ -128,6 +128,25 @@ void ABaseEnemy::BeginPlay()
 	AnimInstance = Cast<UPlayerCharacterAnimations>(GetCustomAnimInstance());
 }
 
+void ABaseEnemy::Death()
+{
+	AnimInstance->SetIsDead(true);
+
+	FTimerHandle DeathTimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(DeathTimerHandle, this, &ABaseEnemy::DeathDelay, 3.7f, false);
+}
+
+void ABaseEnemy::DeathDelay()
+{
+	ACloseRangeSystem* CloseRangeWeapon = Cast<ACloseRangeSystem>(CloseRangeSystem->GetChildActor());
+	ALongRangeSystem* LongRangeWeapon = Cast<ALongRangeSystem>(LongRangeSystem->GetChildActor());
+
+	if (IsValid(CloseRangeWeapon)) CloseRangeWeapon->Destroy();
+	if (IsValid(LongRangeWeapon)) LongRangeWeapon->Destroy();
+
+	Destroy();
+}
+
 // Called every frame
 void ABaseEnemy::Tick(float DeltaTime)
 {
@@ -173,9 +192,26 @@ bool ABaseEnemy::GetAttackIsCloseRange() const
 	return false;
 }
 
+void ABaseEnemy::SetIsDead(bool IsDead)
+{
+	if (IsValid(AnimInstance))
+	{
+		AnimInstance->SetIsDead(IsDead);
+	}
+}
+
+bool ABaseEnemy::GetIsDead() const
+{
+	if (IsValid(AnimInstance))
+	{
+		return AnimInstance->GetIsDead();
+	}
+	return false;
+}
+
 void ABaseEnemy::StartAttack()
 {
-	if (IsValid(ActiveWeapon) && !GetIsAttacking())
+	if (IsValid(ActiveWeapon) && !GetIsAttacking() && !GetIsDead())
 	{
 		ActiveWeapon->StartAttack();
 	}

@@ -21,7 +21,6 @@ void UItemDataComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	GetOwner()->SetReplicates(true);
 }
 
 

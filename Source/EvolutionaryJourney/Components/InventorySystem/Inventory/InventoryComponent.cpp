@@ -56,19 +56,19 @@ void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 int32 UInventoryComponent::AddToInventory(UItemDataComponent* ItemData)
 {
 	FString ItemID = ItemData->ItemID.RowName.ToString();
-	int32 QuantityRemaining = ItemData->Quantity;
 	bool HasFailed = false;
 	int32 index = 0;
-	while (QuantityRemaining > 0 && !HasFailed)
+	while (ItemData->Quantity > 0 && !HasFailed)
 	{
 		index = FindSlot(ItemID);
 		if (index == -1)
 		{
-			if (FindEmptySlot() != -1)
+			index = FindEmptySlot();
+			if (index != -1)
 			{
-				if (CreateNewStack(ItemID, 1, ItemData->ItemTable, ItemData->ItemID.RowName)) 
+				if (CreateNewStack(ItemID, 1, ItemData->ItemTable, ItemData->ItemID.RowName, index)) 
 				{
-					QuantityRemaining--;
+					ItemData->Quantity--;
 				}
 				else
 				{
@@ -83,11 +83,11 @@ int32 UInventoryComponent::AddToInventory(UItemDataComponent* ItemData)
 		else
 		{
 			AddToStack(index, 1);
-			QuantityRemaining--;
+			ItemData->Quantity--;
 		}
 	}
 
-	return QuantityRemaining;
+	return ItemData->Quantity;
 }
 
 int32 UInventoryComponent::FindSlot(FString ItemID)
@@ -135,15 +135,14 @@ int32 UInventoryComponent::FindEmptySlot()
 	return -1;
 }
 
-bool UInventoryComponent::CreateNewStack(FString ItemID, int32 Quantity, UDataTable* ItemTable, FName ItemRowName)
+bool UInventoryComponent::CreateNewStack(FString ItemID, int32 Quantity, UDataTable* ItemTable, FName ItemRowName, int32 index)
 {
-	int32 EmptySlot = FindEmptySlot();
-	if (EmptySlot != -1)
+	if (index != -1)
 	{
-		Content[EmptySlot].ItemID = ItemID;
-		Content[EmptySlot].Quantity = Quantity;
-		Content[EmptySlot].ItemTable = ItemTable;
-		Content[EmptySlot].ItemRowName = ItemRowName;
+		Content[index].ItemID = ItemID;
+		Content[index].Quantity = Quantity;
+		Content[index].ItemTable = ItemTable;
+		Content[index].ItemRowName = ItemRowName;
 		return true;
 	}
 	return false;
@@ -161,10 +160,7 @@ void UInventoryComponent::Debug_PrintInventory()
 
 void UInventoryComponent::RemoveFromInventory(int32 index, bool RemoveWholeStack, bool IsConsumed)
 {
-	FString ItemID = Content[index].ItemID;
-	int32 Quantity = Content[index].Quantity;
-
-	if (RemoveWholeStack || Quantity == 1) 
+	if (RemoveWholeStack || Content[index].Quantity == 1)
 	{
 		if (IsConsumed) 
 		{
@@ -176,7 +172,7 @@ void UInventoryComponent::RemoveFromInventory(int32 index, bool RemoveWholeStack
 		}
 		else
 		{
-			if (Quantity > 0) DropItem(ItemID, Quantity);
+			if (Content[index].Quantity > 0) DropItem(Content[index].ItemID, Content[index].Quantity);
 			Content[index].ItemID = "";
 			Content[index].Quantity = 0;
 		}
@@ -192,13 +188,13 @@ void UInventoryComponent::RemoveFromInventory(int32 index, bool RemoveWholeStack
 		}
 		else
 		{
-			if (Quantity > 0)
+			if (Content[index].Quantity > 0)
 			{
-				DropItem(ItemID, 1);
+				DropItem(Content[index].ItemID, 1);
 				Content[index].Quantity--;
 			}
 		}
-		if (Quantity == 0) Content[index].ItemID = "";
+		if (Content[index].Quantity == 0) Content[index].ItemID = "";
 	}
 	if (APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(Owner))
 	{

@@ -118,11 +118,11 @@ void AEnemyAiController::CheckAndMoveToTarget()
 	if (IsValid(PlayerCharacter)) 
 	{
 		float DistanceToPlayer = FVector::Dist(PlayerCharacter->GetActorLocation(), AIOwner->GetActorLocation());
-		if ((bIsPlayerDetected && !AIOwner->GetIsAttacking()))
+		if ((bIsPlayerDetected && !AIOwner->GetIsAttacking()) && !AIOwner->GetIsDead() && !PlayerCharacter->GetIsDead())
 		{
 			MoveToActor(DetectedPlayer);
 		}
-		else if (DistanceToPlayer <= AIOwner->ChasePlayerRange && !AIOwner->GetIsAttacking())
+		else if (DistanceToPlayer <= AIOwner->ChasePlayerRange && !AIOwner->GetIsAttacking() && !AIOwner->GetIsDead() && !PlayerCharacter->GetIsDead())
 		{
 			MoveToActor(DetectedPlayer);
 		}
@@ -147,7 +147,8 @@ void AEnemyAiController::StopAimCheck()
 
 void AEnemyAiController::CheckAndAimAtTarget()
 {
-	if (bIsPlayerDetected && !AIOwner->GetIsAttacking())
+	APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(DetectedPlayer);
+	if (bIsPlayerDetected && !AIOwner->GetIsAttacking() && !AIOwner->GetIsDead() && !PlayerCharacter->GetIsDead())
 	{
 		AimAtTarget(DetectedPlayer);
 	}

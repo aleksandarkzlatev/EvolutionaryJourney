@@ -27,7 +27,7 @@ void UHealthComponent::BeginPlay()
 
 }
 
-void UHealthComponent::TakeDamage(AActor* DealtBy, int Damage)
+void UHealthComponent::TakeDamage(AActor* DealtBy, int Damage)	
 {
 	if (bCanTakeDamage) 
 	{
@@ -47,6 +47,7 @@ void UHealthComponent::TakeDamage(AActor* DealtBy, int Damage)
 			if (IsValid(PlayerCharacter) && IsValid(Enemy))
 			{
 				PlayerCharacter->IncreaseEXP(Enemy->DroppedEXP);
+				PlayerCharacter->EnemiesKilled++;
 			}
 		}
 		Die();
@@ -55,7 +56,14 @@ void UHealthComponent::TakeDamage(AActor* DealtBy, int Damage)
 
 void UHealthComponent::Die()
 {
-	GetOwner()->Destroy();
+	if (ABaseEnemy* Enemy = Cast<ABaseEnemy>(GetOwner()))
+	{
+		Enemy->Death();
+	}
+	else if (APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(GetOwner()))
+	{
+		PlayerCharacter->Death();
+	}
 }
 
 void UHealthComponent::AllowedToTakeDamage()

@@ -32,6 +32,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	bool bAttackIsCloseRange;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
+	bool bIsDead;
+
 public:
 
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
@@ -39,6 +42,8 @@ public:
 	bool GetIsAttacking() const;
 	void SetAttackIsCloseRange(bool bIsCloseRange);
 	bool GetAttackIsCloseRange() const;
+	void SetIsDead(bool IsDead);
+	bool GetIsDead() const;
 
 private:
 	UAnimInstance* GetCustomAnimInstance() const;

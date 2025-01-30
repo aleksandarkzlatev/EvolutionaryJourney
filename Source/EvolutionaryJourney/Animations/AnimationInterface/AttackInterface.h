@@ -27,4 +27,6 @@ public:
 	virtual bool GetIsAttacking() const = 0;
 	virtual void SetAttackIsCloseRange(bool bIsAttacking) = 0;
 	virtual bool GetAttackIsCloseRange() const = 0;
+	virtual void SetIsDead(bool IsDead) = 0;
+	virtual bool GetIsDead() const = 0;
 };

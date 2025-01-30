@@ -21,6 +21,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	void DeathDelay();
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -71,6 +72,8 @@ public:
 	bool GetIsAttacking() const;
 	void SetAttackIsCloseRange(bool bIsCloseRange);
 	bool GetAttackIsCloseRange() const;
+	void SetIsDead(bool IsDead);
+	bool GetIsDead() const;
 
 	void StartAttack();
 
@@ -87,4 +90,6 @@ public:
 		AActor* OtherActor,
 		UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex);
+
+	void Death();
 };

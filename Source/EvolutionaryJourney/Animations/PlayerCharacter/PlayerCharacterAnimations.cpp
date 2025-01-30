@@ -57,3 +57,13 @@ bool UPlayerCharacterAnimations::GetAttackIsCloseRange() const
 {
 	return bAttackIsCloseRange;
 }
+
+void UPlayerCharacterAnimations::SetIsDead(bool IsDead)
+{
+	bIsDead = IsDead;
+}
+
+bool UPlayerCharacterAnimations::GetIsDead() const
+{
+	return bIsDead;
+}

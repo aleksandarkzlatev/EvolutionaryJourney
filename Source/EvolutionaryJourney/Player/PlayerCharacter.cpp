@@ -72,6 +72,7 @@ APlayerCharacter::APlayerCharacter()
 
 	PerceptionStimuliSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Perception Stimuli Source"));
 
+	EnemiesKilled = 0;
 	MaxWalkSpeed = 500;
 	MaxSprintSpeed = 800;
 	GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
@@ -146,7 +147,6 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	UpdateStamina();
-
 }
 
 // Called to bind functionality to input
@@ -186,7 +186,7 @@ void APlayerCharacter::Move(const FInputActionValue& InputNumber)
 {
 	FVector2D InputVector = InputNumber.Get<FVector2D>();
 
-	if (IsValid(Controller) && !GetIsAttacking()) 
+	if (IsValid(Controller) && !GetIsAttacking() && !GetIsDead()) 
 	{
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
@@ -206,7 +206,7 @@ void APlayerCharacter::Look(const FInputActionValue& InputNumber)
 {
 	FVector2D InputVector = InputNumber.Get<FVector2D>();
 
-	if (IsValid(Controller)) 
+	if (IsValid(Controller) && !GetIsDead()) 
 	{
 		AddControllerYawInput(InputVector.X);
 		AddControllerPitchInput(InputVector.Y);
@@ -215,7 +215,7 @@ void APlayerCharacter::Look(const FInputActionValue& InputNumber)
 
 void APlayerCharacter::Jump()
 {
-	if (!GetIsAttacking()) ACharacter::Jump();
+	if (!GetIsAttacking() && !GetIsDead()) ACharacter::Jump();
 }
 
 bool APlayerCharacter::GetIsFirstPerson()
@@ -275,7 +275,7 @@ void APlayerCharacter::ResetCameraSwitch()
 
 void APlayerCharacter::StartSprint()
 {
-	if (bHasStamina && !GetIsAttacking()) 
+	if (bHasStamina && !GetIsAttacking() && !GetIsDead())
 	{
 		GetCharacterMovement()->MaxWalkSpeed = MaxSprintSpeed;
 
@@ -330,7 +330,7 @@ void APlayerCharacter::UpdateStamina()
 
 void APlayerCharacter::StartAttack()
 {
-	if (IsValid(ActiveWeapon) && !GetIsAttacking()) 
+	if (IsValid(ActiveWeapon) && !GetIsAttacking() && !GetIsDead())
 	{
 		ActiveWeapon->StartAttack();
 	}
@@ -504,6 +504,23 @@ bool APlayerCharacter::GetAttackIsCloseRange() const
 	return false;
 }
 
+void APlayerCharacter::SetIsDead(bool bIsDead)
+{
+	if (IsValid(AnimInstance))
+	{
+		AnimInstance->SetIsDead(bIsDead);
+	}
+}
+
+bool APlayerCharacter::GetIsDead() const
+{
+	if (IsValid(AnimInstance))
+	{
+		return AnimInstance->GetIsDead();
+	}
+	return false;
+}
+
 void APlayerCharacter::IncreaseEXP(float IncreaseBy)
 {
 	CurrentEXP += IncreaseBy;
@@ -513,6 +530,23 @@ void APlayerCharacter::IncreaseEXP(float IncreaseBy)
 		CurrentEXP -= EXPToLevelUp;
 		EXPToLevelUp *= 1.25;
 	}
+}
+
+void APlayerCharacter::Death()
+{
+	AnimInstance->SetIsDead(true);
+
+	FTimerHandle DeathTimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(DeathTimerHandle, this, &APlayerCharacter::DeathDelay, 3.7f, false);
+}
+
+void APlayerCharacter::DeathDelay()
+{
+	ACloseRangeSystem* CloseRangeWeapon = Cast<ACloseRangeSystem>(CloseRangeSystem->GetChildActor());
+	ALongRangeSystem* LongRangeWeapon = Cast<ALongRangeSystem>(LongRangeSystem->GetChildActor());
+
+	if (IsValid(CloseRangeWeapon)) CloseRangeWeapon->Destroy();
+	if (IsValid(LongRangeWeapon)) LongRangeWeapon->Destroy();
 }
 
 void APlayerCharacter::IncreaseLevel()

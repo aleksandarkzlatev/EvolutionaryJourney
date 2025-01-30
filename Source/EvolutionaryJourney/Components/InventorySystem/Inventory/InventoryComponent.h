@@ -63,7 +63,7 @@ public:
 
 	int32 FindEmptySlot();
 
-	bool CreateNewStack(FString ItemID, int32 Quantity, UDataTable* ItemTable, FName ItemRowName);
+	bool CreateNewStack(FString ItemID, int32 Quantity, UDataTable* ItemTable, FName ItemRowName, int32 index);
 
 	void Debug_PrintInventory();
 

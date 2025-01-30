@@ -193,15 +193,20 @@ protected:
 
 	bool GetAttackIsCloseRange() const;
 
+	void SetIsDead(bool bIsDead);
+
 	void IncreaseLevel();
 
-	
+	void DeathDelay();
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+	int32 EnemiesKilled;
 
 	bool GetIsFirstPerson();
 
@@ -217,4 +222,7 @@ public:
 
 	void IncreaseEXP(float IncreaseBy);
 
+	bool GetIsDead() const;
+
+	void Death();
 };

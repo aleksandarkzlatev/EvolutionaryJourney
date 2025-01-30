@@ -97,6 +97,14 @@ void ALongRangeSystem::SpawnProjectile()
 
     SpawnedProjectile = GetWorld()->SpawnActor<ABaseProjectile>(ProjectileActor, SpawnLocation, OwnerRotation);
     SpawnedProjectile->OnActorBeginOverlap.AddDynamic(this, &ALongRangeSystem::BeginOverlap);
+
+	FTimerHandle ProjectileTimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(ProjectileTimerHandle, this, &ALongRangeSystem::SpawnProjectileDestroy, 5.0f, false);
+}
+
+void ALongRangeSystem::SpawnProjectileDestroy()
+{
+	SpawnedProjectile->Destroy();
 }
 
 void ALongRangeSystem::BeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
