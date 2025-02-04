@@ -19,6 +19,10 @@
 #include "Blueprint/UserWidget.h"
 #include "EvolutionaryJourney/UI/Player/PlayerInventoryMenu/PlayerInventoryMenu.h"
 #include "EvolutionaryJourney/UI/Player/PlayerStatBars/PlayerStatBars.h"
+#include "EvolutionaryJourney/UI/Player/PauseMenu/PauseMenu.h"
+#include "EvolutionaryJourney/UI/Player/EnemiesToDefeat/EnemiesToDefeat.h"
+#include <Kismet/GameplayStatics.h>
+#include "EvolutionaryJourney/GameInstance/Player/PlayerGameInstance.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -83,12 +87,24 @@ APlayerCharacter::APlayerCharacter()
 	EXPToLevelUp = 10.0;
 	bCanPickupItem = true;
 	bCanToggleInventory = true;
+	bCanUsePauseMenu = true;
+	bInventoryIsOpen = false;
 }
 
 // Called when the game starts or when spawned
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	UPlayerGameInstance* GameInstance = Cast<UPlayerGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if (IsValid(GameInstance))
+	{
+		if (GameInstance->Health != 0) HealthComponent->SetHealth(GameInstance->Health);
+		if (GameInstance->MaxHealth != 0) HealthComponent->SetMaxHealth(GameInstance->MaxHealth);
+		if (!GameInstance->Content.IsEmpty()) InventoryComponent->Content = GameInstance->Content;
+		if (GameInstance->Level != 0) Level = GameInstance->Level;
+		if (GameInstance->CurrentEXP != 0) CurrentEXP = GameInstance->CurrentEXP;
+		if (GameInstance->EXPToLevelUp != 0) EXPToLevelUp = GameInstance->EXPToLevelUp;
+	}
 	ACloseRangeSystem* CloseRangeWeapon = Cast<ACloseRangeSystem>(CloseRangeSystem->GetChildActor());
 	if (IsValid(CloseRangeWeapon))
 	{
@@ -121,23 +137,31 @@ void APlayerCharacter::BeginPlay()
 		if (IsValid(PlayerHUDWidget))
 		{
 			PlayerHUDWidget->AddToViewport();
-			UPlayerStatBars* PlayerStatBars = Cast<UPlayerStatBars>(PlayerHUDWidget->GetWidgetFromName("WB_PlayerStatBars"));
+			PlayerStatBars = Cast<UPlayerStatBars>(PlayerHUDWidget->GetWidgetFromName("WB_PlayerStatBars"));
 			if (IsValid(PlayerStatBars))
 			{
 				PlayerStatBars->SetVisibility(ESlateVisibility::Visible);
 			}
-			else {
-				UE_LOG(LogTemp, Error, TEXT("APlayerCharacter: PlayerStatBars is not valid"));
-			}
-			UPlayerInventoryMenu* PlayerInventoryMenu = Cast<UPlayerInventoryMenu>(PlayerHUDWidget->GetWidgetFromName("WB_PlayerInventoryMenu"));
+			PlayerInventoryMenu = Cast<UPlayerInventoryMenu>(PlayerHUDWidget->GetWidgetFromName("WB_PlayerInventoryMenu"));
 			if (IsValid(PlayerInventoryMenu))
 			{
 				PlayerInventoryMenu->SetVisibility(ESlateVisibility::Hidden);
 			}
+			PauseMenu = Cast<UPauseMenu>(PlayerHUDWidget->GetWidgetFromName("WB_PauseMenu"));
+			if (IsValid(PauseMenu))
+			{
+				PauseMenu->SetVisibility(ESlateVisibility::Hidden);
+				PauseMenu->bInventoryIsOpen = false;
+				PauseMenu->Owner = this;
+			}
+			EnemiesToDefeat = Cast<UEnemiesToDefeat>(PlayerHUDWidget->GetWidgetFromName("WB_EnemiesToDefeat"));
+			if (IsValid(EnemiesToDefeat))
+			{
+				EnemiesToDefeat->SetVisibility(ESlateVisibility::Hidden);
+				EnemiesToDefeat->Owner = this;
+			}
 		}
-
 	}
-
 
 	AnimInstance = Cast<UPlayerCharacterAnimations>(GetCustomAnimInstance());
 }
@@ -174,7 +198,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		Input->BindAction(AttackAction, ETriggerEvent::Completed, this, &APlayerCharacter::StartAttack);
 		Input->BindAction(SwitchToCloseRangeWeaponAction, ETriggerEvent::Triggered, this, &APlayerCharacter::SwitchToCloseRangeWeapon);
 		Input->BindAction(SwitchToLongRangeWeaponAction, ETriggerEvent::Triggered, this, &APlayerCharacter::SwitchToLongRangeWeapon);
-		Input->BindAction(QuitGameAction, ETriggerEvent::Triggered, this, &APlayerCharacter::QuitGame);
+		Input->BindAction(PauseGameAction, ETriggerEvent::Triggered, this, &APlayerCharacter::PauseGame);
 		Input->BindAction(InteractAction, ETriggerEvent::Triggered, this, &APlayerCharacter::InteractWithItem);
 		Input->BindAction(ToggleInventoryAction, ETriggerEvent::Triggered, this, &APlayerCharacter::ToggleInventory);
 	}
@@ -364,12 +388,38 @@ void APlayerCharacter::SwitchToLongRangeWeapon()
 	}
 }
 
-void APlayerCharacter::QuitGame()
+void APlayerCharacter::PauseGame()
 {
-	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	if (bCanUsePauseMenu)
 	{
-		PlayerController->ConsoleCommand("quit");
+		if (IsValid(PlayerHUDWidget))
+		{
+			PauseMenu->bInventoryIsOpen = bInventoryIsOpen;
+			APlayerController* PlayerController = Cast<APlayerController>(Controller);
+			if (PauseMenu->GetVisibility() == ESlateVisibility::Hidden)
+			{
+				PauseMenu->SetVisibility(ESlateVisibility::Visible);
+				if (PlayerController)
+				{
+					FInputModeGameAndUI InputMode;
+					PauseMenu->SetIsFocusable(true);
+					InputMode.SetWidgetToFocus(PauseMenu->TakeWidget());
+					InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+					PlayerController->SetInputMode(InputMode);
+					PlayerController->bShowMouseCursor = true;
+					PlayerController->SetPause(true);
+				}
+			}
+		}
 	}
+	bCanUsePauseMenu = false;
+	FTimerHandle PauseGameTimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(PauseGameTimerHandle, this, &APlayerCharacter::PauseGameDelay, 0.5f, false);
+}
+
+void APlayerCharacter::PauseGameDelay()
+{
+	bCanUsePauseMenu = true;
 }
 
 void APlayerCharacter::InteractWithItem()
@@ -393,23 +443,24 @@ void APlayerCharacter::ToggleInventory()
 {
 	if (IsValid(PlayerHUDWidget) && bCanToggleInventory)
 	{
-		UPlayerInventoryMenu* PlayerInvenetoryWidget = Cast<UPlayerInventoryMenu>(PlayerHUDWidget->GetWidgetFromName(TEXT("WB_PlayerInventoryMenu")));
-		if (IsValid(PlayerInvenetoryWidget))
+		if (IsValid(PlayerInventoryMenu))
 		{
-			UInventoryGrid* InventoryGrid = Cast<UInventoryGrid>(PlayerInvenetoryWidget->GetWidgetFromName(TEXT("WB_InventoryGrid")));
+			UInventoryGrid* InventoryGrid = Cast<UInventoryGrid>(PlayerInventoryMenu->GetWidgetFromName(TEXT("WB_InventoryGrid")));
 			if (!InventoryGrid->Owner)
 			{
 				InventoryGrid->Owner = this;
 			}
-			if (PlayerInvenetoryWidget->GetVisibility() == ESlateVisibility::Hidden)
+			if (PlayerInventoryMenu->GetVisibility() == ESlateVisibility::Hidden)
 			{
-				PlayerInvenetoryWidget->SetVisibility(ESlateVisibility::Visible);
+				bInventoryIsOpen = true;
+				PlayerInventoryMenu->SetVisibility(ESlateVisibility::Visible);
 				UpdateInventory();
 				OpenInventory(InventoryGrid);
 			}
 			else
 			{
-				PlayerInvenetoryWidget->SetVisibility(ESlateVisibility::Hidden);
+				bInventoryIsOpen = false;
+				PlayerInventoryMenu->SetVisibility(ESlateVisibility::Hidden);
 				CloseInventory();
 			}
 		}
@@ -428,10 +479,9 @@ void APlayerCharacter::UpdateInventory()
 {
 	if (IsValid(PlayerHUDWidget) && bCanToggleInventory)
 	{
-		UPlayerInventoryMenu* PlayerInvenetoryWidget = Cast<UPlayerInventoryMenu>(PlayerHUDWidget->GetWidgetFromName(TEXT("WB_PlayerInventoryMenu")));
-		if (IsValid(PlayerInvenetoryWidget))
+		if (IsValid(PlayerInventoryMenu))
 		{
-			UInventoryGrid* InventoryGrid = Cast<UInventoryGrid>(PlayerInvenetoryWidget->GetWidgetFromName(TEXT("WB_InventoryGrid")));
+			UInventoryGrid* InventoryGrid = Cast<UInventoryGrid>(PlayerInventoryMenu->GetWidgetFromName(TEXT("WB_InventoryGrid")));
 			if (IsValid(InventoryGrid))
 			{
 				InventoryGrid->DisplayInventory();

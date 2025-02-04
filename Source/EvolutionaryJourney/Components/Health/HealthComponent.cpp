@@ -36,7 +36,7 @@ void UHealthComponent::TakeDamage(AActor* DealtBy, int Damage)
 	}
 
 	FTimerHandle InvincibilityDelay;
-	GetWorld()->GetTimerManager().SetTimer(InvincibilityDelay, this, &UHealthComponent::AllowedToTakeDamage, 0.25f, false);
+	GetWorld()->GetTimerManager().SetTimer(InvincibilityDelay, this, &UHealthComponent::AllowedToTakeDamage, 0.5f, false);
 
 	if (Health <= 0) 
 	{
@@ -76,6 +76,11 @@ float UHealthComponent::GetHealth()
 	return Health;
 }
 
+void UHealthComponent::SetHealth(float NewHealth)
+{
+	Health = NewHealth;
+}
+
 bool UHealthComponent::RecoverHealth(float addedHealth)
 {
 	if (Health < MaxHealth)
@@ -97,4 +102,9 @@ bool UHealthComponent::RecoverHealth(float addedHealth)
 float UHealthComponent::GetMaxHealth()
 {
 	return MaxHealth;
+}
+
+void UHealthComponent::SetMaxHealth(float NewMaxHealth)
+{
+	MaxHealth = NewMaxHealth;
 }

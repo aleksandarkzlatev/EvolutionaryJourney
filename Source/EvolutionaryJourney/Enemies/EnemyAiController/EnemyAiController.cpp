@@ -7,6 +7,7 @@
 #include "EvolutionaryJourney/Player/PlayerCharacter.h"
 #include "EvolutionaryJourney/Enemies/BaseEnemy/BaseEnemy.h"
 #include "EvolutionaryJourney/Weapons/LongRangeSystem/LongRangeSystem.h"
+#include "EvolutionaryJourney/Animations/PlayerCharacter/PlayerCharacterAnimations.h"
 #include "Navigation/PathFollowingComponent.h"
 
 
@@ -29,6 +30,7 @@ AEnemyAiController::AEnemyAiController()
 		PerceptionComponent->ConfigureSense(*SightConfig);
 		PerceptionComponent->SetDominantSense(SightConfig->GetSenseImplementation());
 		bIsPlayerDetected = false;
+		PreviousDistanceToPlayer = 0.0f;
 		PerceptionComponent->OnTargetPerceptionUpdated.AddDynamic(this, &AEnemyAiController::OnTargetDetected);
 	}
 	
@@ -79,28 +81,35 @@ void AEnemyAiController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
 
 void AEnemyAiController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result)
 {
-	if (Result.IsSuccess())
+	APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(DetectedPlayer);
+	if (IsValid(PlayerCharacter) && IsValid(AIOwner))
 	{
-		APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(DetectedPlayer);
-		if (IsValid(PlayerCharacter)) 
+		float DistanceToPlayer = FVector::Dist(PlayerCharacter->GetActorLocation(), AIOwner->GetActorLocation());
+		
+		if (AIOwner->ActiveWeapon == AIOwner->CloseRangeSystem->GetChildActor())
 		{
-			float DistanceToPlayer = FVector::Dist(PlayerCharacter->GetActorLocation(), AIOwner->GetActorLocation());
-
-			if (AIOwner->ActiveWeapon == AIOwner->CloseRangeSystem->GetChildActor())
+			if (DistanceToPlayer <= AIOwner->AttackRange && bIsPlayerDetected && !AIOwner->GetIsAttacking())
 			{
-				if (DistanceToPlayer <= AIOwner->AttackRange && bIsPlayerDetected && !AIOwner->GetIsAttacking())
+				AIOwner->StartAttack();
+				StopMovement();
+			}
+			else if (DistanceToPlayer <= AIOwner->ChasePlayerRange && !AIOwner->GetIsAttacking())
+			{
+				if (PreviousDistanceToPlayer != DistanceToPlayer)
 				{
-					AIOwner->StartAttack();
-					StopMovement();
+					PreviousDistanceToPlayer = DistanceToPlayer;
+					MoveToActor(PlayerCharacter);
 				}
-				else if (DistanceToPlayer <= AIOwner->ChasePlayerRange &&!AIOwner->GetIsAttacking())
-				{
-					MoveToActor(DetectedPlayer);
-				}
+			}
+			else
+			{
+				StopMovement();
 			}
 		}
 	}
 }
+
+
 
 void AEnemyAiController::StartMoveCheck()
 {

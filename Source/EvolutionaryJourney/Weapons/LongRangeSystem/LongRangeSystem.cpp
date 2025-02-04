@@ -92,7 +92,7 @@ void ALongRangeSystem::SpawnProjectile()
 
     FVector ForwardVector = WeaponOwner->GetActorForwardVector();
 
-    float SpawnDistance = 200.0f;
+    float SpawnDistance = 10.0f;
     FVector SpawnLocation = OwnerLocation + (ForwardVector * SpawnDistance);
 
     SpawnedProjectile = GetWorld()->SpawnActor<ABaseProjectile>(ProjectileActor, SpawnLocation, OwnerRotation);

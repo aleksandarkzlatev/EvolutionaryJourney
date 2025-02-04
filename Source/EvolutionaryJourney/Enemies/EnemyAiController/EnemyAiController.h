@@ -24,6 +24,8 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	bool bIsPlayerDetected;
 
+	float PreviousDistanceToPlayer;
+
 	FTimerHandle AimCheckTimerHandle;
 
 	FTimerHandle MoveCheckTimerHandle;

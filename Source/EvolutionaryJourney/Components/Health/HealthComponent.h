@@ -38,8 +38,12 @@ public:
 
 	float GetHealth();
 
+	void SetHealth(float NewHealth);
+
 	bool RecoverHealth(float addedHealth);
 
 	float GetMaxHealth();
+
+	void SetMaxHealth(float NewMaxHealth);
 };
 

@@ -28,6 +28,8 @@ protected:
 	bool bHasInfiniteStamina;
 	bool bCanPickupItem;
 	bool bCanToggleInventory;
+	bool bCanUsePauseMenu;
+	bool bInventoryIsOpen;
 
 
 	UPROPERTY(EditAnywhere, Category = "Movement")
@@ -61,9 +63,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Expirience")
 	float EXPToLevelUp;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "UI")
-	UPlayerHUD* PlayerHUDWidget;
 
 	// Basic component needed for the player vision
 	UPROPERTY(EditAnywhere)
@@ -105,7 +104,7 @@ protected:
 	class UInputAction* SwitchToLongRangeWeaponAction;
 
 	UPROPERTY(EditAnywhere, Category = "EnhancedInput")
-	class UInputAction* QuitGameAction;
+	class UInputAction* PauseGameAction;
 
 	UPROPERTY(EditAnywhere, Category = "EnhancedInput")
 	class UInputAction* InteractAction;
@@ -117,6 +116,11 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UPlayerHUD> PlayerHUDWidgetClass;
+
+
+	class UPlayerStatBars* PlayerStatBars;
+	class UPlayerInventoryMenu* PlayerInventoryMenu;
+	class UPauseMenu* PauseMenu;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	class UHealthComponent* HealthComponent;
@@ -168,7 +172,9 @@ protected:
 
 	void SwitchToLongRangeWeapon();
 
-	void QuitGame();
+	void PauseGame();
+
+	void PauseGameDelay();
 
 	void InteractWithItem();
 
@@ -207,6 +213,16 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
 	int32 EnemiesKilled;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	int32 EnemiesToKillForFirstLevel;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "UI")
+	UPlayerHUD* PlayerHUDWidget;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "UI")
+	class UEnemiesToDefeat* EnemiesToDefeat;
+
 
 	bool GetIsFirstPerson();
 
