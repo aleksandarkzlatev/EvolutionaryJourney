@@ -230,6 +230,9 @@ public:
 
 	void SetHasInfiniteStaminaTrueDelay();
 
+	UFUNCTION(BlueprintCallable)
+	bool GetIsInventoryOpen() const;
+
 	UInventoryComponent* GetInventoryComponent() const;
 
 	UHealthComponent* GetHealthComponent() const;

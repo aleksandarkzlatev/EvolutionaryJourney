@@ -259,6 +259,11 @@ void APlayerCharacter::SetHasInfiniteStaminaTrueDelay()
 	bHasInfiniteStamina = false;
 }
 
+bool APlayerCharacter::GetIsInventoryOpen() const
+{
+	return bInventoryIsOpen;
+}
+
 UInventoryComponent* APlayerCharacter::GetInventoryComponent() const
 {
 	return InventoryComponent;
