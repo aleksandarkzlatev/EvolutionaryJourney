@@ -89,8 +89,28 @@ void ACloseRangeSystem::StartAttack()
 
 void ACloseRangeSystem::EndAttack()
 {
-    IAttackInterface* WeaponUser = Cast<IAttackInterface>(WeaponOwner);
-    WeaponUser->SetIsAttacking(false);
+    if (IsValid(WeaponOwner))
+    {
+        IAttackInterface* WeaponUser = Cast<IAttackInterface>(WeaponOwner);
+        if (WeaponUser)
+        {
+            WeaponUser->SetIsAttacking(false);
+            FTimerHandle AttackDelayTimerHandle;
+            GetWorld()->GetTimerManager().SetTimer(AttackDelayTimerHandle, this, &ACloseRangeSystem::EndAttackDelay, 0.2f, false);
+        }
+    }
+}
+
+void ACloseRangeSystem::EndAttackDelay()
+{
+    if (IsValid(WeaponOwner))
+    {
+        IAttackInterface* WeaponUser = Cast<IAttackInterface>(WeaponOwner);
+        if (WeaponUser)
+        {
+            WeaponUser->SetIsAttacking(false);
+        }
+    }
 }
 
 void ACloseRangeSystem::TurnCollisionOn()

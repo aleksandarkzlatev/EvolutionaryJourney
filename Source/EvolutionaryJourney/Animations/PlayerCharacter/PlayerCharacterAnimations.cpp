@@ -67,3 +67,13 @@ bool UPlayerCharacterAnimations::GetIsDead() const
 {
 	return bIsDead;
 }
+
+void UPlayerCharacterAnimations::SetIsUsingMagic(bool IsUsingMagic)
+{
+	bIsUsingMagic = IsUsingMagic;
+}
+
+bool UPlayerCharacterAnimations::GetIsUsingMagic() const
+{
+	return bIsUsingMagic;
+}

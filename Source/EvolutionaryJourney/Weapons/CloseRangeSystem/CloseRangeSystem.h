@@ -35,6 +35,8 @@ public:
 
 	void EndAttack() override;
 
+	void EndAttackDelay();
+
 	UFUNCTION(BlueprintCallable)
 	void TurnCollisionOn();
 

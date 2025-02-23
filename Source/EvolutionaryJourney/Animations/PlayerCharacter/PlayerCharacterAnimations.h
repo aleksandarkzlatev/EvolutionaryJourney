@@ -35,6 +35,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	bool bIsDead;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
+	bool bIsUsingMagic;
+
 public:
 
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
@@ -44,6 +47,8 @@ public:
 	bool GetAttackIsCloseRange() const;
 	void SetIsDead(bool IsDead);
 	bool GetIsDead() const;
+	void SetIsUsingMagic(bool IsUsingMagic);
+	bool GetIsUsingMagic() const;
 
 private:
 	UAnimInstance* GetCustomAnimInstance() const;

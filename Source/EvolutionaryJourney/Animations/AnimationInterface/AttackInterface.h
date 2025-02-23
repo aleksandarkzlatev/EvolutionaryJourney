@@ -29,4 +29,6 @@ public:
 	virtual bool GetAttackIsCloseRange() const = 0;
 	virtual void SetIsDead(bool IsDead) = 0;
 	virtual bool GetIsDead() const = 0;
+	virtual void SetIsUsingMagic(bool IsUsingMagic) = 0;
+	virtual bool GetIsUsingMagic() const = 0;
 };

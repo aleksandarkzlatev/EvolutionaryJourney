@@ -81,8 +81,28 @@ void ALongRangeSystem::StartAttack()
 
 void ALongRangeSystem::EndAttack()
 {
-    IAttackInterface* WeaponUser = Cast<IAttackInterface>(WeaponOwner);
-    WeaponUser->SetIsAttacking(false);
+    if (IsValid(WeaponOwner)) 
+    {
+		IAttackInterface* WeaponUser = Cast<IAttackInterface>(WeaponOwner);
+        if (WeaponUser)
+        {
+            WeaponUser->SetIsAttacking(false);
+            FTimerHandle AttackDelayTimerHandle;
+            GetWorld()->GetTimerManager().SetTimer(AttackDelayTimerHandle, this, &ALongRangeSystem::EndAttackDelay, 0.2f, false);
+        }
+    }
+}
+
+void ALongRangeSystem::EndAttackDelay()
+{
+    if (IsValid(WeaponOwner))
+    {
+        IAttackInterface* WeaponUser = Cast<IAttackInterface>(WeaponOwner);
+        if (WeaponUser)
+        {
+            WeaponUser->SetIsAttacking(false);
+        }
+    }
 }
 
 void ALongRangeSystem::SpawnProjectile()

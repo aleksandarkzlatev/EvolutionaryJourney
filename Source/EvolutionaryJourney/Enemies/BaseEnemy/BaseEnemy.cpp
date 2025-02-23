@@ -15,6 +15,7 @@
 #include "Components/WidgetComponent.h"
 #include "Components/BoxComponent.h"
 #include "EvolutionaryJourney/UI/Enemy/HealthBar/EnemyHealthBar.h"
+#include "Navigation/PathFollowingComponent.h"
 
 
 ABaseEnemy::ABaseEnemy()
@@ -128,12 +129,28 @@ void ABaseEnemy::BeginPlay()
 	AnimInstance = Cast<UPlayerCharacterAnimations>(GetCustomAnimInstance());
 }
 
-void ABaseEnemy::Death()
-{
-	AnimInstance->SetIsDead(true);
+void ABaseEnemy::Death()  
+{  
+   AnimInstance->SetIsDead(true);  
+   if(ActiveWeapon->IsA(ACloseRangeSystem::StaticClass()))  
+   {  
+	   AiController->StopMovement();
+	   if (IsValid(AiController))
+	   {
+		   UPathFollowingComponent* PathFollowingComp = AiController->GetPathFollowingComponent();
+		   if (PathFollowingComp)
+		   {
+			   PathFollowingComp->AbortMove(*this, FPathFollowingResultFlags::OwnerFinished);
+		   }
+	   }
+   }  
+   else  
+   {  
+	   AiController->ClearFocus(EAIFocusPriority::Gameplay);
+   }  
 
-	FTimerHandle DeathTimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(DeathTimerHandle, this, &ABaseEnemy::DeathDelay, 3.7f, false);
+   FTimerHandle DeathTimerHandle;  
+   GetWorld()->GetTimerManager().SetTimer(DeathTimerHandle, this, &ABaseEnemy::DeathDelay, 3.7f, false);  
 }
 
 void ABaseEnemy::DeathDelay()
@@ -205,6 +222,23 @@ bool ABaseEnemy::GetIsDead() const
 	if (IsValid(AnimInstance))
 	{
 		return AnimInstance->GetIsDead();
+	}
+	return false;
+}
+
+void ABaseEnemy::SetIsUsingMagic(bool IsUsingMagic)
+{
+	if (IsValid(AnimInstance))
+	{
+		AnimInstance->SetIsUsingMagic(IsUsingMagic);
+	}
+}
+
+bool ABaseEnemy::GetIsUsingMagic() const
+{
+	if (IsValid(AnimInstance))
+	{
+		return AnimInstance->GetIsUsingMagic();
 	}
 	return false;
 }

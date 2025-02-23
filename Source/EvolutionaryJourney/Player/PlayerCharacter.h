@@ -6,6 +6,7 @@
 #include "EvolutionaryJourney/UI/Player/PlayerHUD/PlayerHUD.h"
 #include "EvolutionaryJourney/UI/Player/InventoryGrid/InventoryGrid.h"
 #include "InputActionValue.h"
+#include "EvolutionaryJourney/Weapons/BaseProjectile/BaseProjectile.h"
 #include "PlayerCharacter.generated.h"
 
 UCLASS()
@@ -30,6 +31,8 @@ protected:
 	bool bCanToggleInventory;
 	bool bCanUsePauseMenu;
 	bool bInventoryIsOpen;
+	bool bCanDash;
+	bool bCanLaunchFireball;
 
 
 	UPROPERTY(EditAnywhere, Category = "Movement")
@@ -55,6 +58,9 @@ protected:
 
 	float CurrentRefillDelayTime;
 
+	UPROPERTY(EditAnywhere, Category = "Movement")
+	float StaminaDelayBeforeDrain;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Expirience")
 	int Level;
 
@@ -63,6 +69,15 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Expirience")
 	float EXPToLevelUp;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
+	float ForwardDashSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
+	float UpwardDashSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
+	float FireballDamage;
 
 	// Basic component needed for the player vision
 	UPROPERTY(EditAnywhere)
@@ -112,6 +127,11 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "EnhancedInput")
 	class UInputAction* ToggleInventoryAction;
 
+	UPROPERTY(EditAnywhere, Category = "EnhancedInput")
+	class UInputAction* DashAction;
+
+	UPROPERTY(EditAnywhere, Category = "EnhancedInput")
+	class UInputAction* LaunchFireballAction;
 
 
 	UPROPERTY(EditAnywhere, Category = "UI")
@@ -149,6 +169,14 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI")
 	class UAIPerceptionStimuliSourceComponent* PerceptionStimuliSource;
 
+	UPROPERTY(EditAnywhere, Category = "Effects")
+	class UNiagaraSystem* DashEffect;
+
+	UPROPERTY(EditAnywhere, Category = "Ability")
+	TSubclassOf<ABaseProjectile> FireballAbility;
+
+	UPROPERTY(VisibleAnywhere)
+	class ABaseProjectile* SpawnedFireball;
 
 	void Move(const FInputActionValue& ActionValue);
 
@@ -188,6 +216,28 @@ protected:
 
 	void CloseInventory();
 
+	void Dash();
+
+	void DashDelay();
+
+	void LaunchFireball();
+
+	UFUNCTION(BlueprintCallable)
+	void CreateFirevall();
+
+	UFUNCTION(BlueprintCallable)
+	void EndFireballLaunch();
+
+	void LaunchFireballDelay();
+
+	UFUNCTION()
+	void FireballBeginOverlap(AActor* OverlappedActor, AActor* OtherActor);
+
+	UFUNCTION()
+	void OnFireballHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit);
+
+	void DestroyFailedFireball();
+
 	UAnimInstance* GetCustomAnimInstance() const;
 
 	UFUNCTION(BlueprintCallable)
@@ -200,6 +250,10 @@ protected:
 	bool GetAttackIsCloseRange() const;
 
 	void SetIsDead(bool bIsDead);
+
+	void SetIsUsingMagic(bool IsUsingMagic);
+
+	bool GetIsUsingMagic() const;
 
 	void IncreaseLevel();
 

@@ -15,6 +15,7 @@
 #include "Components/ChildActorComponent.h"
 #include "Perception//AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISense_Sight.h"
+#include "EvolutionaryJourney/Enemies/BaseEnemy/BaseEnemy.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Blueprint/UserWidget.h"
 #include "EvolutionaryJourney/UI/Player/PlayerInventoryMenu/PlayerInventoryMenu.h"
@@ -23,6 +24,9 @@
 #include "EvolutionaryJourney/UI/Player/EnemiesToDefeat/EnemiesToDefeat.h"
 #include <Kismet/GameplayStatics.h>
 #include "EvolutionaryJourney/GameInstance/Player/PlayerGameInstance.h"
+#include "../../../../../EpicGames/UnrealEngine/UE_5.5/Engine/Plugins/FX/Niagara/Source/Niagara/Public/NiagaraFunctionLibrary.h"
+
+
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -82,6 +86,7 @@ APlayerCharacter::APlayerCharacter()
 	GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
 	MaxStamina = 100;
 	CurrStamina = MaxStamina;
+	StaminaDelayBeforeDrain = 0.015;
 	Level = 0;
 	CurrentEXP = 0;
 	EXPToLevelUp = 10.0;
@@ -89,6 +94,11 @@ APlayerCharacter::APlayerCharacter()
 	bCanToggleInventory = true;
 	bCanUsePauseMenu = true;
 	bInventoryIsOpen = false;
+	bCanDash = true;
+	ForwardDashSpeed = 1000;
+	UpwardDashSpeed = 500;
+	bCanLaunchFireball = true;
+	FireballDamage = 10;
 }
 
 // Called when the game starts or when spawned
@@ -164,13 +174,15 @@ void APlayerCharacter::BeginPlay()
 	}
 
 	AnimInstance = Cast<UPlayerCharacterAnimations>(GetCustomAnimInstance());
+
+	FTimerHandle StaminaTimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(StaminaTimerHandle, this, &APlayerCharacter::UpdateStamina, StaminaDelayBeforeDrain, true);
 }
 
 // Called every frame
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	UpdateStamina();
 }
 
 // Called to bind functionality to input
@@ -201,6 +213,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		Input->BindAction(PauseGameAction, ETriggerEvent::Triggered, this, &APlayerCharacter::PauseGame);
 		Input->BindAction(InteractAction, ETriggerEvent::Triggered, this, &APlayerCharacter::InteractWithItem);
 		Input->BindAction(ToggleInventoryAction, ETriggerEvent::Triggered, this, &APlayerCharacter::ToggleInventory);
+		Input->BindAction(DashAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Dash);
+		Input->BindAction(LaunchFireballAction, ETriggerEvent::Triggered, this, &APlayerCharacter::LaunchFireball);
 	}
 
 
@@ -210,7 +224,7 @@ void APlayerCharacter::Move(const FInputActionValue& InputNumber)
 {
 	FVector2D InputVector = InputNumber.Get<FVector2D>();
 
-	if (IsValid(Controller) && !GetIsAttacking() && !GetIsDead()) 
+	if (IsValid(Controller) && !GetIsAttacking() && !GetIsDead() && !GetIsUsingMagic()) 
 	{
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
@@ -239,7 +253,7 @@ void APlayerCharacter::Look(const FInputActionValue& InputNumber)
 
 void APlayerCharacter::Jump()
 {
-	if (!GetIsAttacking() && !GetIsDead()) ACharacter::Jump();
+	if (!GetIsAttacking() && !GetIsDead() && !GetIsUsingMagic()) ACharacter::Jump();
 }
 
 bool APlayerCharacter::GetIsFirstPerson()
@@ -304,7 +318,7 @@ void APlayerCharacter::ResetCameraSwitch()
 
 void APlayerCharacter::StartSprint()
 {
-	if (bHasStamina && !GetIsAttacking() && !GetIsDead())
+	if (bHasStamina && !GetIsAttacking() && !GetIsDead() && !GetIsUsingMagic())
 	{
 		GetCharacterMovement()->MaxWalkSpeed = MaxSprintSpeed;
 
@@ -359,7 +373,7 @@ void APlayerCharacter::UpdateStamina()
 
 void APlayerCharacter::StartAttack()
 {
-	if (IsValid(ActiveWeapon) && !GetIsAttacking() && !GetIsDead())
+	if (IsValid(ActiveWeapon) && !GetIsAttacking() && !GetIsDead() && !GetIsUsingMagic())
 	{
 		ActiveWeapon->StartAttack();
 	}
@@ -520,6 +534,122 @@ void APlayerCharacter::CloseInventory()
 	}
 }
 
+	void APlayerCharacter::Dash()
+	{
+		if (bCanDash && !GetIsAttacking() && !GetIsDead())
+		{
+			FVector MovementDirection = GetCharacterMovement()->GetLastInputVector();
+
+			if (MovementDirection.IsNearlyZero())
+			{
+				MovementDirection = GetActorForwardVector();
+			}
+			MovementDirection.Normalize();
+
+			FVector DashVelocity = MovementDirection * ForwardDashSpeed + GetActorUpVector() * UpwardDashSpeed;
+
+			LaunchCharacter(DashVelocity, true, true);
+			
+			if (DashEffect)
+			{
+				UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAttached(
+					DashEffect,
+					GetMesh(),
+					TEXT("DashSocket"),
+					FVector::ZeroVector,
+					FRotator::ZeroRotator,
+					EAttachLocation::SnapToTarget,
+					true
+				);
+			}
+			bCanDash = false;
+			FTimerHandle DashTimerHandle;
+			GetWorld()->GetTimerManager().SetTimer(DashTimerHandle, this, &APlayerCharacter::DashDelay,10.0f, false);
+		}
+	}
+
+void APlayerCharacter::DashDelay()
+{
+	bCanDash = true;
+}
+
+void APlayerCharacter::LaunchFireball()
+{
+	if (bCanLaunchFireball && !GetIsAttacking() && !GetIsDead() && !GetIsUsingMagic())
+	{
+		if (IsValid(FireballAbility) && IsValid(AnimInstance))
+		{
+			AnimInstance->SetIsUsingMagic(true);
+		}
+	}
+}
+
+void APlayerCharacter::CreateFirevall()
+{
+	FVector OwnerLocation = GetActorLocation();
+	FRotator OwnerRotation = GetActorRotation();
+	FVector ForwardVector = GetActorForwardVector();
+	float SpawnDistance = 25.0f;
+	FVector SpawnLocation = OwnerLocation + (ForwardVector * SpawnDistance);
+	SpawnedFireball = GetWorld()->SpawnActor<ABaseProjectile>(FireballAbility, SpawnLocation, OwnerRotation);
+	SpawnedFireball->OnActorBeginOverlap.AddDynamic(this, &APlayerCharacter::FireballBeginOverlap);
+	SpawnedFireball->OnActorHit.AddDynamic(this, &APlayerCharacter::OnFireballHit);
+	bCanLaunchFireball = false;
+	FTimerHandle FireballTimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(FireballTimerHandle, this, &APlayerCharacter::LaunchFireballDelay, 15.0f, false);
+}
+
+void APlayerCharacter::EndFireballLaunch()
+{
+	if (IsValid(AnimInstance))
+	{
+		AnimInstance->SetIsUsingMagic(false);
+	}
+}
+
+void APlayerCharacter::LaunchFireballDelay()
+{
+	bCanLaunchFireball = true;
+	if (IsValid(SpawnedFireball))
+	{
+		SpawnedFireball->Destroy();
+		SpawnedFireball = nullptr;
+	}
+}
+
+void APlayerCharacter::FireballBeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
+{
+	ABaseEnemy* Enemy = Cast<ABaseEnemy>(OtherActor);
+	if (IsValid(Enemy))
+	{
+		UHealthComponent* EnemyHealthComponent = Enemy->FindComponentByClass<UHealthComponent>();
+		if (IsValid(EnemyHealthComponent))
+		{
+			EnemyHealthComponent->TakeDamage(this, FireballDamage);
+			if (IsValid(SpawnedFireball))
+			{
+				SpawnedFireball->Destroy();
+				SpawnedFireball = nullptr;
+			}
+		}
+	}
+}
+
+void APlayerCharacter::OnFireballHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit)
+{
+	FTimerHandle FireballTimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(FireballTimerHandle, this, &APlayerCharacter::DestroyFailedFireball, 3.0f, false);
+}
+
+void APlayerCharacter::DestroyFailedFireball()
+{
+	if (IsValid(SpawnedFireball))
+	{
+		SpawnedFireball->Destroy();
+		SpawnedFireball = nullptr;
+	}
+}
+
 UAnimInstance* APlayerCharacter::GetCustomAnimInstance() const
 {
 	return GetMesh()->GetAnimInstance();
@@ -565,6 +695,23 @@ void APlayerCharacter::SetIsDead(bool bIsDead)
 	{
 		AnimInstance->SetIsDead(bIsDead);
 	}
+}
+
+void APlayerCharacter::SetIsUsingMagic(bool IsUsingMagic)
+{
+	if (IsValid(AnimInstance))
+	{
+		AnimInstance->SetIsUsingMagic(IsUsingMagic);
+	}
+}
+
+bool APlayerCharacter::GetIsUsingMagic() const
+{
+	if (IsValid(AnimInstance))
+	{
+		return AnimInstance->GetIsUsingMagic();
+	}
+	return false;
 }
 
 bool APlayerCharacter::GetIsDead() const

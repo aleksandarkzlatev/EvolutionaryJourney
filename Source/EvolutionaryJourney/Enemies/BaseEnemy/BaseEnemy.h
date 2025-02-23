@@ -74,6 +74,8 @@ public:
 	bool GetAttackIsCloseRange() const;
 	void SetIsDead(bool IsDead);
 	bool GetIsDead() const;
+	void SetIsUsingMagic(bool IsUsingMagic);
+	bool GetIsUsingMagic() const;
 
 	void StartAttack();
 

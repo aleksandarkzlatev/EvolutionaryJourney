@@ -95,7 +95,7 @@ void AEnemyAiController::OnMoveCompleted(FAIRequestID RequestID, const FPathFoll
 			}
 			else if (DistanceToPlayer <= AIOwner->ChasePlayerRange && !AIOwner->GetIsAttacking())
 			{
-				if (PreviousDistanceToPlayer != DistanceToPlayer)
+				if (PreviousDistanceToPlayer != DistanceToPlayer && IsValid(DetectedPlayer))
 				{
 					PreviousDistanceToPlayer = DistanceToPlayer;
 					MoveToActor(PlayerCharacter);
@@ -123,15 +123,23 @@ void AEnemyAiController::StopMoveCheck()
 
 void AEnemyAiController::CheckAndMoveToTarget()
 {
+	if (!IsValid(AIOwner) || AIOwner->GetIsDead())
+	{
+		StopMoveCheck();
+		StopMovement();
+		return;
+	}
+
 	APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(DetectedPlayer);
 	if (IsValid(PlayerCharacter)) 
 	{
 		float DistanceToPlayer = FVector::Dist(PlayerCharacter->GetActorLocation(), AIOwner->GetActorLocation());
-		if ((bIsPlayerDetected && !AIOwner->GetIsAttacking()) && !AIOwner->GetIsDead() && !PlayerCharacter->GetIsDead())
+
+		if ((bIsPlayerDetected && !AIOwner->GetIsAttacking()) && !AIOwner->GetIsDead() && !PlayerCharacter->GetIsDead() && IsValid(DetectedPlayer))
 		{
 			MoveToActor(DetectedPlayer);
 		}
-		else if (DistanceToPlayer <= AIOwner->ChasePlayerRange && !AIOwner->GetIsAttacking() && !AIOwner->GetIsDead() && !PlayerCharacter->GetIsDead())
+		else if (DistanceToPlayer <= AIOwner->ChasePlayerRange && !AIOwner->GetIsAttacking() && !AIOwner->GetIsDead() && !PlayerCharacter->GetIsDead() && IsValid(DetectedPlayer))
 		{
 			MoveToActor(DetectedPlayer);
 		}
@@ -157,7 +165,7 @@ void AEnemyAiController::StopAimCheck()
 void AEnemyAiController::CheckAndAimAtTarget()
 {
 	APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(DetectedPlayer);
-	if (bIsPlayerDetected && !AIOwner->GetIsAttacking() && !AIOwner->GetIsDead() && !PlayerCharacter->GetIsDead())
+	if (bIsPlayerDetected && !AIOwner->GetIsAttacking() && !AIOwner->GetIsDead() && !PlayerCharacter->GetIsDead() && IsValid(DetectedPlayer))
 	{
 		AimAtTarget(DetectedPlayer);
 	}
