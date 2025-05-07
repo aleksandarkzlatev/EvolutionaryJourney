@@ -77,7 +77,13 @@ protected:
 	float UpwardDashSpeed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
+	float DashCooldownTime;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ability")
 	float FireballDamage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
+	float FireballCooldownTime;
 
 	// Basic component needed for the player vision
 	UPROPERTY(EditAnywhere)
@@ -141,6 +147,8 @@ protected:
 	class UPlayerStatBars* PlayerStatBars;
 	class UPlayerInventoryMenu* PlayerInventoryMenu;
 	class UPauseMenu* PauseMenu;
+	class UAbilityWidget* DashIcon;
+	class UAbilityWidget* FireballIcon;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	class UHealthComponent* HealthComponent;

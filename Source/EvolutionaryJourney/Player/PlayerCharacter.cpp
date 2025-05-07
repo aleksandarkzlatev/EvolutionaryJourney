@@ -22,6 +22,7 @@
 #include "EvolutionaryJourney/UI/Player/PlayerStatBars/PlayerStatBars.h"
 #include "EvolutionaryJourney/UI/Player/PauseMenu/PauseMenu.h"
 #include "EvolutionaryJourney/UI/Player/EnemiesToDefeat/EnemiesToDefeat.h"
+#include "EvolutionaryJourney/UI/Player/AbilityWidget/AbilityWidget.h"
 #include <Kismet/GameplayStatics.h>
 #include "EvolutionaryJourney/GameInstance/Player/PlayerGameInstance.h"
 #include "../../../../../EpicGames/UnrealEngine/UE_5.5/Engine/Plugins/FX/Niagara/Source/Niagara/Public/NiagaraFunctionLibrary.h"
@@ -99,6 +100,8 @@ APlayerCharacter::APlayerCharacter()
 	UpwardDashSpeed = 500;
 	bCanLaunchFireball = true;
 	FireballDamage = 10;
+	DashCooldownTime = 10.0f;
+	FireballCooldownTime = 15.0f;
 }
 
 // Called when the game starts or when spawned
@@ -169,6 +172,18 @@ void APlayerCharacter::BeginPlay()
 			{
 				EnemiesToDefeat->SetVisibility(ESlateVisibility::Hidden);
 				EnemiesToDefeat->Owner = this;
+			}
+			DashIcon = Cast<UAbilityWidget>(PlayerHUDWidget->GetWidgetFromName("WB_DashIcon"));
+			if (IsValid(DashIcon))
+			{
+				DashIcon->SetVisibility(ESlateVisibility::Visible);
+				DashIcon->CooldownDuratation = DashCooldownTime;
+			}
+			FireballIcon = Cast<UAbilityWidget>(PlayerHUDWidget->GetWidgetFromName("WB_FireballIcon"));
+			if (IsValid(FireballIcon))
+			{
+				FireballIcon->SetVisibility(ESlateVisibility::Visible);
+				FireballIcon->CooldownDuratation = FireballCooldownTime;
 			}
 		}
 	}
@@ -534,39 +549,44 @@ void APlayerCharacter::CloseInventory()
 	}
 }
 
-	void APlayerCharacter::Dash()
+void APlayerCharacter::Dash()
+{
+	if (bCanDash && !GetIsAttacking() && !GetIsDead())
 	{
-		if (bCanDash && !GetIsAttacking() && !GetIsDead())
+		FVector MovementDirection = GetCharacterMovement()->GetLastInputVector();
+
+		if (MovementDirection.IsNearlyZero())
 		{
-			FVector MovementDirection = GetCharacterMovement()->GetLastInputVector();
-
-			if (MovementDirection.IsNearlyZero())
-			{
-				MovementDirection = GetActorForwardVector();
-			}
-			MovementDirection.Normalize();
-
-			FVector DashVelocity = MovementDirection * ForwardDashSpeed + GetActorUpVector() * UpwardDashSpeed;
-
-			LaunchCharacter(DashVelocity, true, true);
-			
-			if (DashEffect)
-			{
-				UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAttached(
-					DashEffect,
-					GetMesh(),
-					TEXT("DashSocket"),
-					FVector::ZeroVector,
-					FRotator::ZeroRotator,
-					EAttachLocation::SnapToTarget,
-					true
-				);
-			}
-			bCanDash = false;
-			FTimerHandle DashTimerHandle;
-			GetWorld()->GetTimerManager().SetTimer(DashTimerHandle, this, &APlayerCharacter::DashDelay,10.0f, false);
+			MovementDirection = GetActorForwardVector();
 		}
+		MovementDirection.Normalize();
+
+		FVector DashVelocity = MovementDirection * ForwardDashSpeed + GetActorUpVector() * UpwardDashSpeed;
+
+		LaunchCharacter(DashVelocity, true, true);
+
+		if(IsValid(DashIcon))
+		{
+			DashIcon->BeginCooldown();
+		}
+			
+		if (DashEffect)
+		{
+			UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAttached(
+				DashEffect,
+				GetMesh(),
+				TEXT("DashSocket"),
+				FVector::ZeroVector,
+				FRotator::ZeroRotator,
+				EAttachLocation::SnapToTarget,
+				true
+			);
+		}
+		bCanDash = false;
+		FTimerHandle DashTimerHandle;
+		GetWorld()->GetTimerManager().SetTimer(DashTimerHandle, this, &APlayerCharacter::DashDelay,10.0f, false);
 	}
+}
 
 void APlayerCharacter::DashDelay()
 {
@@ -595,6 +615,12 @@ void APlayerCharacter::CreateFirevall()
 	SpawnedFireball->OnActorBeginOverlap.AddDynamic(this, &APlayerCharacter::FireballBeginOverlap);
 	SpawnedFireball->OnActorHit.AddDynamic(this, &APlayerCharacter::OnFireballHit);
 	bCanLaunchFireball = false;
+
+	if (IsValid(FireballIcon))
+	{
+		FireballIcon->BeginCooldown();
+	}
+
 	FTimerHandle FireballTimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(FireballTimerHandle, this, &APlayerCharacter::LaunchFireballDelay, 15.0f, false);
 }
